@@ -13,10 +13,10 @@ def conv_lstm_ae():
         cfg = yaml.load(ymlfile)
 
     t = cfg['time_length']
-    input_tensor = Input(shape=(t, 160, 240, 1))
+    input_tensor = Input(shape=(t, 227, 227, 1))
 
     conv1 = TimeDistributed(Conv2D(128, kernel_size=(11, 11), padding='same', strides=(4, 4), name='conv1'),
-                            input_shape=(t, 160, 240, 1))(input_tensor)
+                            input_shape=(t, 227, 227, 1))(input_tensor)
     conv1 = TimeDistributed(BatchNormalization())(conv1)
     conv1 = TimeDistributed(Activation('relu'))(conv1)
 
