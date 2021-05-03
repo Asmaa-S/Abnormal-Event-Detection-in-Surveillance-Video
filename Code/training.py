@@ -1,6 +1,27 @@
 
-def train(dataset, job_folder, logger, video_root_path='VIDEO_ROOT_PATH'):
-    """Build and train the model
+def compile_model(model, loss, optimizer):
+    """
+        Compiles the given model with a specific loss and optimizer
+    """
+    from keras import optimizers
+    model.summary()
+    if optimizer == 'sgd':
+        opt = optimizers.SGD(nesterov=True)
+    else:
+        opt = optimizer
+    model.compile(loss=loss, optimizer=opt)
+
+def get_model_by_config(model_cfg_name):
+    '''
+        Get the model specified in the config file from models.py
+    '''
+    module = __import__('models')
+    get_model_func  = getattr(module, model_cfg_name)
+    return get_model_func()
+
+def train(dataset, job_folder, logger, video_root_path):
+    """
+        Build and train the model
     """
     import yaml
     import numpy as np
@@ -13,19 +34,19 @@ def train(dataset, job_folder, logger, video_root_path='VIDEO_ROOT_PATH'):
     with open(os.path.join(job_folder, 'config.yml'), 'r') as ymlfile:
         cfg = yaml.load(ymlfile)
 
+    #get the parameters from the config file
     nb_epoch = cfg['epochs']
     batch_size = cfg['batch_size']
     loss = cfg['cost']
     optimizer = cfg['optimizer']
     time_length = cfg['time_length']
 
-    # logger.info("Building model of type {} and activation {}".format(model_type, activation))
-    if time_length <= 0:
-        model = get_model_by_config(cfg['model'])
-    else:
-        model = get_model(time_length)
+    #get the model
+    model = get_model_by_config(cfg['model'])
+    
     for layer in model.layers:
         print(layer.output_shape)
+
     logger.info("Compiling model with {} and {} optimizer".format(loss, optimizer))
     compile_model(model, loss, optimizer)
 
@@ -35,7 +56,7 @@ def train(dataset, job_folder, logger, video_root_path='VIDEO_ROOT_PATH'):
         yaml.dump(yaml_string, outfile)
 
     logger.info("Preparing training and testing data")
-    #preprocess_data(logger, dataset, time_length, video_root_path)
+    preprocess_data(logger, dataset, time_length, video_root_path)
     if time_length <= 0:
         data = np.load(os.path.join(video_root_path, '{0}/training_frames_t0.npy'.format(dataset)))
     else:
@@ -43,7 +64,9 @@ def train(dataset, job_folder, logger, video_root_path='VIDEO_ROOT_PATH'):
 
     snapshot = ModelCheckpoint(os.path.join(job_folder,
                'model_snapshot_e{epoch:03d}_{val_loss:.6f}.h5'))
+
     earlystop = EarlyStopping(patience=10)
+
     history_log = LossHistory(job_folder=job_folder, logger=logger)
 
     logger.info("Initializing training...")
@@ -52,7 +75,7 @@ def train(dataset, job_folder, logger, video_root_path='VIDEO_ROOT_PATH'):
         data, data,
         batch_size=batch_size,
         epochs=nb_epoch,
-        validation_split=0.15,
+        validation_split=0.2,
         shuffle='batch',
         callbacks=[snapshot, earlystop, history_log]
     )

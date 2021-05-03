@@ -60,7 +60,8 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
       INPUTS:
         - dataset: the name of the dataset folder 
         - video_root_path: the folder that contains all the datasets
-        - is_combine:
+        - is_combine: check whether to combine all videos data in one file/list 
+                --> I think used if we will not use volumes from the data
       
   '''
     import os
@@ -163,6 +164,7 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
             testing_combine.extend(testing_frames_vid.reshape(-1, 227, 227, 1))
 
     #save combine values-- why? only god knows xD
+    #I think these are used in case we do not form volumes out of the data? - Dina
     if is_combine:
         training_combine = np.array(training_combine)
         testing_combine = np.array(testing_combine)
