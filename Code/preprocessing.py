@@ -171,6 +171,14 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
 
 #################################################################################################
 def build_h5(dataset, train_or_test, t, video_root_path):
+  '''
+    Build h5 files for each test/train video
+      INPUTS:
+        - dataset: dataset name
+        - train_or_test: whether it is training or testing data
+        - t: time length of each volume
+        - video_root_path: path of the folder that contains all the datasets
+  '''
     import h5py
     from tqdm import tqdm
     import os
@@ -192,21 +200,24 @@ def build_h5(dataset, train_or_test, t, video_root_path):
             data_frames = np.expand_dims(data_frames, axis=-1)
             num_frames = data_frames.shape[0]
             
-            data_only_frames = np.zeros((num_frames-time_length, time_length, 227, 227, 1)).astype('float64')
+            #num_of_volumes = num_of_frames_in_video - time_length +1 ----> Edit: Dina
+            data_only_frames = np.zeros((num_frames-time_length +1, time_length, 227, 227, 1)).astype('float64')
 
             vol = 0
-            for j in range(num_frames-time_length):
+            for j in range(num_frames-time_length+1):
                 data_only_frames[vol] = data_frames[j:j+time_length] # Read a single volume
                 vol += 1
 
+            #h5 file path: video_root_path/dataset/(training^testing)_h5_t_(time_length)_(video_num)
             with h5py.File(os.path.join(video_root_path, '{0}/{1}_h5_t{2}/{0}_{3:02d}.h5'.format(dataset, train_or_test, time_length, i+1)), 'w') as f:
-                if train_or_test == 'Train':
+                if train_or_test == 'training':
                     np.random.shuffle(data_only_frames)
                 f['data'] = data_only_frames
 
     
     os.makedirs(os.path.join(video_root_path, '{}/{}_h5_t{}'.format(dataset, train_or_test, t)), exist_ok=True)
-    num_videos = len(os.listdir(os.path.join(video_root_path, '{}/{}'.format(dataset, train_or_test))))-1
+    #removed -1 in calculating the num_videos ----> Edit: Dina
+    num_videos = len(os.listdir(os.path.join(video_root_path, '{}/{}'.format(dataset, train_or_test))))
     build_volume(train_or_test, num_videos, time_length=t)
 
 ###########################################################################################3
