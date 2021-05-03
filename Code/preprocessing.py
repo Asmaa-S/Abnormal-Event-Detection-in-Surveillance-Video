@@ -1,12 +1,12 @@
-'''
-This function is used to calculate the mean of all frames in the training dataset
-    INPUTS:
-      - dataset: the name of the dataset folder 
-      - video_root_path: the folder that contains all the datasets
-    OUTPUTS: 
-        Saves the mean frame to a .npy file
-'''
 def calc_mean(dataset, video_root_path):
+    '''
+    This function is used to calculate the mean of all frames in the training dataset
+        INPUTS:
+          - dataset: the name of the dataset folder 
+          - video_root_path: the folder that contains all the datasets
+        OUTPUTS: 
+            Saves the mean frame to a .npy file
+    '''
     import os
     from skimage.io import imread
     import numpy as np
@@ -52,15 +52,17 @@ def calc_mean(dataset, video_root_path):
     #save the mean frame to video_root_path/dataset/mean_frame_224.npy
     np.save(os.path.join(video_root_path, dataset, 'mean_frame_224.npy'), frame_mean)
 
-'''
-This function substracts the mean found in video_root_path/dataset/mean_frame_224.npy from all the frame files
-    INPUTS:
-      - dataset: the name of the dataset folder 
-      - video_root_path: the folder that contains all the datasets
-      - is_combine:
-    
-'''
+######################################################################################3
 def subtract_mean(dataset, video_root_path, is_combine=False):
+
+  '''
+  This function substracts the mean found in video_root_path/dataset/mean_frame_224.npy from all the frame files
+      INPUTS:
+        - dataset: the name of the dataset folder 
+        - video_root_path: the folder that contains all the datasets
+        - is_combine:
+      
+  '''
     import os
     import yaml
     from skimage.io import imread
@@ -128,6 +130,7 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
             training_combine.extend(training_frames_vid.reshape(-1, 227, 227, 1))
     
     #do the same for the test data
+
     frame_path = os.path.join(video_root_path, dataset, 'testing_frames')
     for frame_folder in os.listdir(frame_path):
       if frame_folder == '.DS_Store' or frame_folder== '._.DS_Store' or frame_folder.endswith('_gt') or not frame_folder.startswith('Test'):
@@ -140,6 +143,7 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
             continue
           else:
             frame_filename = os.path.join(frame_path, frame_folder, frame_file)
+            #exceptions related to OUR dataset
             try:
               frame_value = imread(frame_filename, as_grey=True, plugin='pil')/256
             except:
@@ -150,16 +154,14 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
             frame_value -= frame_mean
             testing_frames_vid.append(frame_value)
         testing_frames_vid = np.array(testing_frames_vid)
-
         if noise_factor is not None and noise_factor > 0:
             testing_frames_vid = add_noise(testing_frames_vid, noise_factor)
         if is_clip is not None and is_clip:
             testing_frames_vid = np.clip(testing_frames_vid, 0, 1)
-
         np.save(os.path.join(video_root_path, dataset,'testing_numpy','testing_frames_{}.npy'.format(frame_folder[-3:])), testing_frames_vid)
         if is_combine:
             testing_combine.extend(testing_frames_vid.reshape(-1, 227, 227, 1))
-            
+
     #save combine values-- why? only god knows xD
     if is_combine:
         training_combine = np.array(training_combine)
@@ -167,6 +169,7 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
         np.save(os.path.join(video_root_path, dataset,'training_numpy' ,'training_frames_t0.npy'), training_combine)
         np.save(os.path.join(video_root_path, dataset,'testing_numpy','testing_frames_t0.npy'), testing_combine)
 
+#################################################################################################
 def build_h5(dataset, train_or_test, t, video_root_path):
     import h5py
     from tqdm import tqdm
@@ -175,12 +178,20 @@ def build_h5(dataset, train_or_test, t, video_root_path):
 
     print("==> {} {}".format(dataset, train_or_test))
 
-    def build_volume(train_or_test, num_videos, time_length):
+    def build_volume(train_or_test, num_videos, time_length):    
+    '''
+        create volumes out of the frames where each voulume has a certain time_length
+          INPUTS: 
+            - train_or_test: whether to build volumes in training or testing data
+            - num_videos: number of videos in the dataset
+            - time_length: the time length of each volume
+    '''
         for i in tqdm(range(num_videos)):
-            data_frames = np.load(os.path.join(video_root_path, '{}/{}_frames_{:03d}.npy'.format(dataset, train_or_test, i+1)))
+          #data frames path: video_root_path/ dataset/ training^testing_numpy/ training^testing_frames_{}.npy
+            data_frames = np.load(os.path.join(video_root_path, '{}/{}_numpy/{}_frames_{:03d}.npy'.format(dataset,train_or_test, train_or_test, i+1)))
             data_frames = np.expand_dims(data_frames, axis=-1)
             num_frames = data_frames.shape[0]
-
+            
             data_only_frames = np.zeros((num_frames-time_length, time_length, 227, 227, 1)).astype('float64')
 
             vol = 0
@@ -197,6 +208,8 @@ def build_h5(dataset, train_or_test, t, video_root_path):
     os.makedirs(os.path.join(video_root_path, '{}/{}_h5_t{}'.format(dataset, train_or_test, t)), exist_ok=True)
     num_videos = len(os.listdir(os.path.join(video_root_path, '{}/{}'.format(dataset, train_or_test))))-1
     build_volume(train_or_test, num_videos, time_length=t)
+
+###########################################################################################3
 
 def combine_dataset(dataset, t, video_root_path='VIDEO_ROOT_PATH'):
     import h5py
@@ -232,6 +245,7 @@ def combine_dataset(dataset, t, video_root_path='VIDEO_ROOT_PATH'):
 
     output_file.close()
 
+######################################################################################
 
 def preprocess_data(logger, dataset, t, video_root_path):
     import os
