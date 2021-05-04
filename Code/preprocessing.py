@@ -193,6 +193,7 @@ def build_h5(dataset, train_or_test, t, video_root_path):
         create volumes out of the frames where each voulume has a certain time_length
           INPUTS: 
             - train_or_test: whether to build volumes in training or testing data
+                use "training" or "testing" as inputs
             - num_videos: number of videos in the dataset
             - time_length: the time length of each volume
     '''

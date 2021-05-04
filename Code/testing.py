@@ -30,7 +30,7 @@ def anomaly_score(raw_frame_cost_vid):
     return score_vid
 
 def test(logger, dataset, t, job_uuid, epoch, val_loss, visualize_score=True, visualize_frame=False,
-         video_root_path):
+         video_root_path, n_videos):
     import numpy as np
     from keras.models import load_model
     import os
@@ -50,5 +50,32 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, visualize_score=True, vi
     #where to save results?
     save_path = os.path.join(job_folder, 'result', str(epoch))
     os.makedirs(save_path, exist_ok=True)
-    
-    
+
+    sr_test = []
+    #loop on all videos in the test data
+    for video_id in range(n_videos):
+        videoname = '{0}_{1:02d}.h5'.format(dataset, videoid+1)
+        filepath = os.path.join(test_dir, videoname)
+        logger.info("==> {}".format(filepath))
+
+        if t > 0:
+            f = h5py.File(filepath, 'r')
+            filesize = f['data'].shape[0]
+            f.close()
+        
+        #load data
+        if t > 0: #if there was a time_length for the volumes
+            X_test = HDF5Matrix(filepath, 'data')
+            X_test = np.array(X_test)
+        else:
+            X_test = np.load(os.path.join(video_root_path, '{0}/testing_numpy/testing_frames_{1:03d}.npy'.format(dataset, videoid+1))).reshape(-1, 227, 227, 1)
+
+        #calculate errors
+        et = t_predict_frame(temporal_model, X_test, t)
+        sa = anomaly_score(et)
+        sr = 1-sa
+        sr_test.append(sr)
+        
+        #####Next: sr is a matrix? how should I plot the error to know which one is abnormal?
+
+
