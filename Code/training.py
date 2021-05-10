@@ -62,7 +62,7 @@ def train(dataset, job_folder, logger, video_root_path):
     if time_length <= 0:
         data = np.load(os.path.join(video_root_path, '{0}/training_frames_t0.npy'.format(dataset)))
     else:
-        data = HDF5Matrix(os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length)), 'data')
+        data = np.array(HDF5Matrix(os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length)), 'data'))
 
     snapshot = ModelCheckpoint(os.path.join(job_folder,
                'model_snapshot_e{epoch:03d}_{val_loss:.6f}.h5'))
