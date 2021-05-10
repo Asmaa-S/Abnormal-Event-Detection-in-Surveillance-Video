@@ -1,0 +1,9 @@
+time_length: 4
+cost: mse
+epochs: 1000
+optimizer: adam
+batch_size: 16
+model: conv_lstm_ae
+noise_factor: 0
+clip: false
+data-regen: false
