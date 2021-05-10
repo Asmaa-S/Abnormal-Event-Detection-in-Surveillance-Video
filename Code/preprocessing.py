@@ -64,108 +64,108 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
                 --> I think used if we will not use volumes from the data
       
   '''
-    import os
-    import yaml
-    from skimage.io import imread
-    import numpy as np
-    from skimage.transform import resize
+  import os
+  import yaml
+  from skimage.io import imread
+  import numpy as np
+  from skimage.transform import resize
     
-    #add noise to the data frames
-    def add_noise(data, noise_factor):
-      import numpy as np
-      noisy_data = data + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=data.shape)
-      return noisy_data
+  #add noise to the data frames
+  def add_noise(data, noise_factor):
+    import numpy as np
+    noisy_data = data + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=data.shape)
+    return noisy_data
     #load the mean file
-    frame_mean = np.load(os.path.join(video_root_path, dataset, 'mean_frame_224.npy'))
+  frame_mean = np.load(os.path.join(video_root_path, dataset, 'mean_frame_224.npy'))
 
-    training_combine = []
-    testing_combine = []
+  training_combine = []
+  testing_combine = []
 
-    #open & get the parameters from the configuration file 
-    with open('config.yml', 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
-    #is_clip: make sure values are within [0:1]?
-    is_clip = cfg.get('clip')
-    #add noise to the frames?
-    noise_factor = cfg.get('noise_factor')
+  #open & get the parameters from the configuration file 
+  with open('config.yml', 'r') as ymlfile:
+      cfg = yaml.load(ymlfile)
+  #is_clip: make sure values are within [0:1]?
+  is_clip = cfg.get('clip')
+  #add noise to the frames?
+  noise_factor = cfg.get('noise_factor')
 
-    #path to training data: video_root_path/dataset/training_frames
-    frame_path = os.path.join(video_root_path, dataset, 'training_frames')
-    #loop on data folders
-    for frame_folder in os.listdir(frame_path):
-      if frame_folder == '.DS_Store' or frame_folder== '._.DS_Store':
-        continue
-      else:
-        print('==> ' + os.path.join(frame_path, frame_folder))
-        #list of all processed frames
-        training_frames_vid = []
-        #loop on files in each folder
-        for frame_file in sorted(os.listdir(os.path.join(frame_path, frame_folder))):
-          if frame_file == '.DS_Store' or frame_file == '._.DS_Store':
-            continue
-          else:
-            #frame path: video_root_path/dataset/training_frames/frame_folder/frame_file
-            frame_filename = os.path.join(frame_path, frame_folder, frame_file)
-            #normalize frame
-            frame_value = imread(frame_filename, as_grey=True, plugin='pil')/256
-            #resize
-            frame_value = resize(frame_value, (227, 227), mode='reflect')
-            assert(0. <= frame_value.all() <= 1.)
-            #subtract mean
-            frame_value -= frame_mean
-            training_frames_vid.append(frame_value)
-        training_frames_vid = np.array(training_frames_vid)
+  #path to training data: video_root_path/dataset/training_frames
+  frame_path = os.path.join(video_root_path, dataset, 'training_frames')
+  #loop on data folders
+  for frame_folder in os.listdir(frame_path):
+    if frame_folder == '.DS_Store' or frame_folder== '._.DS_Store':
+      continue
+    else:
+      print('==> ' + os.path.join(frame_path, frame_folder))
+      #list of all processed frames
+      training_frames_vid = []
+      #loop on files in each folder
+      for frame_file in sorted(os.listdir(os.path.join(frame_path, frame_folder))):
+        if frame_file == '.DS_Store' or frame_file == '._.DS_Store':
+          continue
+        else:
+          #frame path: video_root_path/dataset/training_frames/frame_folder/frame_file
+          frame_filename = os.path.join(frame_path, frame_folder, frame_file)
+          #normalize frame
+          frame_value = imread(frame_filename, as_grey=True, plugin='pil')/256
+          #resize
+          frame_value = resize(frame_value, (227, 227), mode='reflect')
+          assert(0. <= frame_value.all() <= 1.)
+          #subtract mean
+          frame_value -= frame_mean
+          training_frames_vid.append(frame_value)
+      training_frames_vid = np.array(training_frames_vid)
 
-        #add noise if specified
-        if noise_factor is not None and noise_factor > 0:
-            training_frames_vid = add_noise(training_frames_vid, noise_factor)
-        #clip values to be withing [0:1]
-        if is_clip is not None and is_clip:
-            training_frames_vid = np.clip(training_frames_vid, 0, 1)
-        #save frames data to video_root_path/dataset/training_frames_{}.npy --- each vid has one file
-        np.save(os.path.join(video_root_path, dataset, 'training_numpy', 'training_frames_{}.npy'.format(frame_folder[-3:])), training_frames_vid)
+      #add noise if specified
+      if noise_factor is not None and noise_factor > 0:
+        training_frames_vid = add_noise(training_frames_vid, noise_factor)
+      #clip values to be withing [0:1]
+      if is_clip is not None and is_clip:
+        training_frames_vid = np.clip(training_frames_vid, 0, 1)
+      #save frames data to video_root_path/dataset/training_frames_{}.npy --- each vid has one file
+      np.save(os.path.join(video_root_path, dataset, 'training_numpy', 'training_frames_{}.npy'.format(frame_folder[-3:])), training_frames_vid)
         
-        if is_combine:
-          #training_frames_vid shape = (# of frames, 227*227)
-          #training_combine shape = (# of frames,227,227,1)
-            training_combine.extend(training_frames_vid.reshape(-1, 227, 227, 1))
+      if is_combine:
+        #training_frames_vid shape = (# of frames, 227*227)
+        #training_combine shape = (# of frames,227,227,1)
+        training_combine.extend(training_frames_vid.reshape(-1, 227, 227, 1))
     
     #do the same for the test data
 
-    frame_path = os.path.join(video_root_path, dataset, 'testing_frames')
-    for frame_folder in os.listdir(frame_path):
-      if frame_folder == '.DS_Store' or frame_folder== '._.DS_Store' or frame_folder.endswith('_gt') or not frame_folder.startswith('Test'):
-        continue
-      else:
-        print('==> ' + os.path.join(frame_path, frame_folder))
-        testing_frames_vid = []
-        for frame_file in sorted(os.listdir(os.path.join(frame_path, frame_folder))):
-          if frame_file == '.DS_Store' or frame_file== '._.DS_Store':
+  frame_path = os.path.join(video_root_path, dataset, 'testing_frames')
+  for frame_folder in os.listdir(frame_path):
+    if frame_folder == '.DS_Store' or frame_folder== '._.DS_Store' or frame_folder.endswith('_gt') or not frame_folder.startswith('Test'):
+      continue
+    else:
+      print('==> ' + os.path.join(frame_path, frame_folder))
+      testing_frames_vid = []
+      for frame_file in sorted(os.listdir(os.path.join(frame_path, frame_folder))):
+        if frame_file == '.DS_Store' or frame_file== '._.DS_Store':
+          continue
+        else:
+          frame_filename = os.path.join(frame_path, frame_folder, frame_file)
+          #exceptions related to OUR dataset
+          try:
+            frame_value = imread(frame_filename, as_grey=True, plugin='pil')/256
+          except:
+            print("Error in: ",frame_file)
             continue
-          else:
-            frame_filename = os.path.join(frame_path, frame_folder, frame_file)
-            #exceptions related to OUR dataset
-            try:
-              frame_value = imread(frame_filename, as_grey=True, plugin='pil')/256
-            except:
-              print("Error in: ",frame_file)
-              continue
-            frame_value = resize(frame_value, (227, 227), mode='reflect')
-            assert(0. <= frame_value.all() <= 1.)
-            frame_value -= frame_mean
-            testing_frames_vid.append(frame_value)
-        testing_frames_vid = np.array(testing_frames_vid)
-        if noise_factor is not None and noise_factor > 0:
-            testing_frames_vid = add_noise(testing_frames_vid, noise_factor)
-        if is_clip is not None and is_clip:
-            testing_frames_vid = np.clip(testing_frames_vid, 0, 1)
-        np.save(os.path.join(video_root_path, dataset,'testing_numpy','testing_frames_{}.npy'.format(frame_folder[-3:])), testing_frames_vid)
-        if is_combine:
-            testing_combine.extend(testing_frames_vid.reshape(-1, 227, 227, 1))
+          frame_value = resize(frame_value, (227, 227), mode='reflect')
+          assert(0. <= frame_value.all() <= 1.)
+          frame_value -= frame_mean
+          testing_frames_vid.append(frame_value)
+      testing_frames_vid = np.array(testing_frames_vid)
+      if noise_factor is not None and noise_factor > 0:
+          testing_frames_vid = add_noise(testing_frames_vid, noise_factor)
+      if is_clip is not None and is_clip:
+          testing_frames_vid = np.clip(testing_frames_vid, 0, 1)
+      np.save(os.path.join(video_root_path, dataset,'testing_numpy','testing_frames_{}.npy'.format(frame_folder[-3:])), testing_frames_vid)
+      if is_combine:
+        testing_combine.extend(testing_frames_vid.reshape(-1, 227, 227, 1))
 
-    #save combine values-- why? only god knows xD
-    #I think these are used in case we do not form volumes out of the data? - Dina
-    if is_combine:
+  #save combine values-- why? only god knows xD
+  #I think these are used in case we do not form volumes out of the data? - Dina
+      if is_combine:
         training_combine = np.array(training_combine)
         testing_combine = np.array(testing_combine)
         np.save(os.path.join(video_root_path, dataset,'training_numpy' ,'training_frames_t0.npy'), training_combine)
