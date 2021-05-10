@@ -232,7 +232,7 @@ def build_h5(dataset, train_or_test, t, video_root_path):
 
 def combine_dataset(dataset, t, video_root_path):
 
-    '''
+  '''
   This function combines multiple .h5 files together forming bigger files (volumes)
   '''
   
