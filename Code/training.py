@@ -69,7 +69,7 @@ def train(dataset, job_folder, logger, video_root_path):
 
     earlystop = EarlyStopping(patience=10)
 
-    history_log = LossHistory(job_folder=job_folder, logger=logger)
+    history_log = LossHistory(job_folder, logger)
 
     logger.info("Initializing training...")
 
