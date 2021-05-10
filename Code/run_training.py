@@ -57,6 +57,6 @@ elif device == 'gpu':
     logger.debug("Using GPU 0 and 1")
 
 
-train(dataset=dataset, job_folder=job_folder, logger=logger, video_root_path)
+train(dataset, job_folder, logger, video_root_path)
 
 logger.info("Job {} has finished training.".format(job_uuid))
