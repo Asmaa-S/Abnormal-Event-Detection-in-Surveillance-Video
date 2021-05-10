@@ -55,6 +55,7 @@ def calc_mean(dataset, video_root_path):
 ######################################################################################3
 def subtract_mean(dataset, video_root_path, is_combine=False):
 
+
   '''
   This function substracts the mean found in video_root_path/dataset/mean_frame_224.npy from all the frame files
       INPUTS:
@@ -71,11 +72,13 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
   from skimage.transform import resize
     
   #add noise to the data frames
+  
   def add_noise(data, noise_factor):
     import numpy as np
     noisy_data = data + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=data.shape)
     return noisy_data
-    #load the mean file
+  
+  #load the mean file
   frame_mean = np.load(os.path.join(video_root_path, dataset, 'mean_frame_224.npy'))
 
   training_combine = []
@@ -228,9 +231,11 @@ def build_h5(dataset, train_or_test, t, video_root_path):
 ###########################################################################################3
 
 def combine_dataset(dataset, t, video_root_path):
+
     '''
   This function combines multiple .h5 files together forming bigger files (volumes)
   '''
+  
   import h5py
   import os
   from tqdm import tqdm
