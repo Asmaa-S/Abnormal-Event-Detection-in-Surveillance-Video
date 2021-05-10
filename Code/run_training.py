@@ -22,7 +22,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logger = logging.getLogger()
 device = 'gpu0'
 
-video_root_path='gdrive/My Drive/Grad Project/data/UCSD'
+video_root_path='/content/drive/MyDrive/Grad Project/data/UCSD'
 dataset = 'UCSDped1' 
 
 job_uuid = str(uuid.uuid4())
