@@ -17,9 +17,8 @@ def conv_lstm_ae():
 
     conv1 = TimeDistributed(Conv2D(128, kernel_size=(11, 11), padding='same', strides=(4, 4), name='conv1'),
                             input_shape=(t, 227, 227, 1))(input_tensor)
-    l2 = Flatten()(conv1)
 
-    conv1 = TimeDistributed(BatchNormalization())(l2)
+    conv1 = TimeDistributed(BatchNormalization())(conv1)
     conv1 = TimeDistributed(Activation('relu'))(conv1)
 
     conv2 = TimeDistributed(Conv2D(64, kernel_size=(5, 5), padding='same', strides=(2, 2), name='conv2'))(conv1)
