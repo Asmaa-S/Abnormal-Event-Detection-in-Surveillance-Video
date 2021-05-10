@@ -225,7 +225,7 @@ def build_h5(dataset, train_or_test, t, video_root_path):
     
   os.makedirs(os.path.join(video_root_path, '{}/{}_h5_t{}'.format(dataset, train_or_test, t)), exist_ok=True)
   #removed -1 in calculating the num_videos ----> Edit: Dina
-  num_videos = len(os.listdir(os.path.join(video_root_path, '{}/{}'.format(dataset, train_or_test))))
+  num_videos = len(os.listdir(os.path.join(video_root_path, '{}/{}_frames'.format(dataset, train_or_test))))
   build_volume(train_or_test, num_videos, time_length=t)
 
 ###########################################################################################3
