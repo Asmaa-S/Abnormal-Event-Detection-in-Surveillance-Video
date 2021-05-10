@@ -24,6 +24,7 @@ def train(dataset, job_folder, logger, video_root_path):
         Build and train the model
     """
     import yaml
+    import os
     import numpy as np
     from keras.callbacks import ModelCheckpoint, EarlyStopping
     from custom_callback import LossHistory
