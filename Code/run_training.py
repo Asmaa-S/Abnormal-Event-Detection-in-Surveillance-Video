@@ -27,6 +27,7 @@ dataset = 'UCSDped1'
 
 job_uuid = str(uuid.uuid4())
 job_folder = os.path.join(video_root_path,dataset,'logs/jobs'.format(dataset), job_uuid)
+os.makedirs(job_folder)
 
 copyfile('config.yml', os.path.join(job_folder, 'config.yml'))
 
