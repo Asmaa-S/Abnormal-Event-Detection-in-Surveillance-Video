@@ -6,7 +6,7 @@ def conv_lstm_ae():
     from keras.layers.normalization import BatchNormalization
     from keras.layers.wrappers import TimeDistributed
     from keras.layers.core import Activation
-    from keras.layers import Input
+    from keras.layers import Input, Flatten
     import yaml
 
     with open('config.yml', 'r') as ymlfile:
