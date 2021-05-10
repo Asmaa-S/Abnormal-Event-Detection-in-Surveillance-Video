@@ -14,7 +14,7 @@ import datetime
 import os
 import sys
 import coloredlogs
-from classifier import train
+from training import train
 import uuid
 from shutil import copyfile
 
