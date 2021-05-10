@@ -220,7 +220,7 @@ def build_h5(dataset, train_or_test, t, video_root_path):
       with h5py.File(os.path.join(video_root_path, '{0}/{1}_h5_t{2}/{0}_{3:02d}.h5'.format(dataset, train_or_test, time_length, i+1)), 'w') as f:
         if train_or_test == 'training':
           np.random.shuffle(data_only_frames)
-      f['data'] = data_only_frames
+        f['data'] = data_only_frames
 
     
   os.makedirs(os.path.join(video_root_path, '{}/{}_h5_t{}'.format(dataset, train_or_test, t)), exist_ok=True)
