@@ -17,7 +17,7 @@ def conv_lstm_ae():
     input_tensor = Input(shape=(t, 227, 227, 1))
     
     conv1 = Conv3D(filters=128, kernel_size=(11, 11, 1), strides=(4, 4,1), padding='valid', input_shape=(t, 227, 227, 1)
-            ,activation='relu')
+            ,activation='relu')(input_tensor)
     conv2 = Conv3D(filters=64, kernel_size=(5, 5,1), strides=(2, 2,1), padding='valid', activation='relu')(conv1)
     
     
