@@ -1,6 +1,7 @@
 
 def conv_lstm_ae():
     from keras.models import Model
+    from keras.layers import Conv3D,ConvLSTM2D,Conv3DTranspose
     from keras.layers.convolutional import Conv2D, Conv2DTranspose
     from keras.layers.convolutional_recurrent import ConvLSTM2D
     from keras.layers.normalization import BatchNormalization
