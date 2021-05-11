@@ -1,4 +1,4 @@
-time_length: 4
+time_length: 10
 cost: mse
 epochs: 1000
 optimizer: adam
