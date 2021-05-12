@@ -41,7 +41,7 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
 
     #fetching paths to test_data, job_folder and trained model
     test_dir = os.path.join(video_root_path, '{0}/testing_h5_t{1}'.format(dataset, t))
-    job_folder = os.path.join(video_root_path,dataset,'logs/{}/jobs'.format(dataset), job_uuid)
+    job_folder = os.path.join(video_root_path,dataset,'logs/jobs',job_uuid)
     model_filename = 'model_snapshot_e{:03d}_{:.6f}.h5'.format(epoch, val_loss)
 
     #load model
