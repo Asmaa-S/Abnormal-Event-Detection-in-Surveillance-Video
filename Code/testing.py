@@ -72,7 +72,7 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
             X_test = np.load(os.path.join(video_root_path, '{0}/testing_numpy/testing_frames_{1:03d}.npy'.format(dataset, videoid+1))).reshape(-1, 227, 227, 1)
 
         #calculate errors
-        et = t_predict_frame(temporal_model, X_test, t)
+        et = t_predict(temporal_model, X_test, t)
         sa = anomaly_score(et)
         sr = 1-sa
         sr_test.append(sr)
