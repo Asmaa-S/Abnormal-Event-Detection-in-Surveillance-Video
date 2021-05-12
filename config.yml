@@ -1,6 +1,6 @@
 time_length: 10
 cost: mse
-epochs: 1000
+epochs: 50
 optimizer: adam
 batch_size: 16
 model: conv_lstm_ae
