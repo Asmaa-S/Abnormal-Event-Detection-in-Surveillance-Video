@@ -53,7 +53,7 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
 
     sr_test = []
     #loop on all videos in the test data
-    for video_id in range(n_videos):
+    for videoid in range(n_videos):
         videoname = '{0}_{1:02d}.h5'.format(dataset, videoid+1)
         filepath = os.path.join(test_dir, videoname)
         logger.info("==> {}".format(filepath))
