@@ -12,7 +12,7 @@ def t_predict (model, X, t =4):
     import numpy as np
     #get volumes 
     X_count = X.shape[0]
-    input_vol = np.zeros((X_count-t+1, t, 227, 227, 1)).astype('float64')
+    input_vol = np.zeros((X_count-t+1, 227, 227, t, 1)).astype('float64')
     for i in range(X_count-t+1):
         input_vol[i] = X[i:i + t]
     #predict
@@ -29,8 +29,7 @@ def anomaly_score(raw_frame_cost_vid):
     score_vid = score_vid / max(score_vid)
     return score_vid
 
-def test(logger, dataset, t, job_uuid, epoch, val_loss, visualize_score=True, visualize_frame=False,
-         video_root_path, n_videos):
+def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_videos):
     import numpy as np
     from keras.models import load_model
     import os
@@ -38,6 +37,7 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, visualize_score=True, vi
     from keras.utils.io_utils import HDF5Matrix
     import matplotlib.pyplot as plt
     from scipy.misc import imresize, toimage
+    import matplotlib.pyplot as plt
 
     #fetching paths to test_data, job_folder and trained model
     test_dir = os.path.join(video_root_path, '{0}/testing_h5_t{1}'.format(dataset, t))
@@ -67,6 +67,7 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, visualize_score=True, vi
         if t > 0: #if there was a time_length for the volumes
             X_test = HDF5Matrix(filepath, 'data')
             X_test = np.array(X_test)
+            X_test = np.reshape(X_test, (len(X_test), 227,227,t, 1))
         else:
             X_test = np.load(os.path.join(video_root_path, '{0}/testing_numpy/testing_frames_{1:03d}.npy'.format(dataset, videoid+1))).reshape(-1, 227, 227, 1)
 
@@ -77,5 +78,9 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, visualize_score=True, vi
         sr_test.append(sr)
         
         #####Next: sr is a matrix? how should I plot the error to know which one is abnormal?
+    plt.plot(sr_test)
+    plt.ylabel('regularity score Sr(t)')
+    plt.xlabel('frame t')
+    plt.show()
 
 
