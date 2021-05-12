@@ -3,7 +3,7 @@ import datetime
 import os
 import sys
 import coloredlogs
-from classifier import test
+from testing import test
 
 
 def handle_exception(exc_type, exc_value, exc_traceback):
