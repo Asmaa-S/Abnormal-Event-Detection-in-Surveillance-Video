@@ -12,15 +12,11 @@ def t_predict (model, X, t =4):
     import numpy as np
     #get # of test examples 
     X_count = X.shape[0]
-    input_vol = np.zeros((X_count-t+1, t, 227, 227, 1)).astype('float64')
-    for i in range(X_count-t+1):
-        input_vol[i] = X[i:i + t]
-    #predict
-    input_vol = np.reshape(np.array(input_vol), (X_count-t+1, 227,227,t,1))
+    input_vol = np.reshape(X, (len(X), 227,227,t, 1)
     predicted_vol = model.predict(input_vol)
     #mean square error
     error_arr = np.zeros((X_count, 227, 227, 1)).astype('float64')
-    for i in range(X_count-t+1):
+    for i in range(len(X)):
         for j in range(t):
             error_arr[i+j] += (predicted_vol[i, j] - input_vol[i, j])**2
     return np.squeeze(error_arr)
