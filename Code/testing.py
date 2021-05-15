@@ -10,7 +10,7 @@
 '''
 def t_predict (model, X, t =4):
     import numpy as np
-    #get volumes 
+    #get # of test examples 
     X_count = X.shape[0]
     input_vol = np.zeros((X_count-t+1, t, 227, 227, 1)).astype('float64')
     for i in range(X_count-t+1):
