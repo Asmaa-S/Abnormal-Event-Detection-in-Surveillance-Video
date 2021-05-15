@@ -8,23 +8,35 @@
             sr = 1-sa
         4- compare score to a threshold
 '''
-def t_predict (model, X, t =4):
+def score(x1, x2):
     import numpy as np
-    #get # of test examples 
-    X_count = X.shape[0]
-    input_vol = np.reshape(X, (len(X), 227,227,t, 1))
-    predicted_vol = model.predict(input_vol)
-    #mean square error
-    error_arr = np.zeros((X_count, 227, 227, 1)).astype('float64')
-    for i in range(len(X)):
-        for j in range(t):
-            error_arr[i+j] += (predicted_vol[i, j] - input_vol[i, j])**2
-    return np.squeeze(error_arr)
 
-def anomaly_score(raw_frame_cost_vid):
-    score_vid = raw_frame_cost_vid - min(raw_frame_cost_vid)
-    score_vid = score_vid / max(score_vid)
-    return score_vid
+    cost = np.array(np.linalg.norm(np.subtract(x1,x2)))
+    sa = (cost - np.min(cost)) / np.max(cost)
+    sr = 1.0 - sa
+    return sr
+
+def t_predict (model, X_test, t =4):
+    import numpy as np
+
+    flag = 0
+    X_test=X_test.reshape(-1,227,227,10)
+    X_test=np.expand_dims(X_test,axis=4)
+    
+    for number,bunch in enumerate(X_test):
+        n_bunch=np.expand_dims(bunch,axis=0)
+        reconstructed_bunch = model.predict(n_bunch)
+        loss= score(n_bunch,reconstructed_bunch)
+
+        threshold = 0.1
+        print("loss = ", loss)
+        if loss>threshold:
+            print("Anomalous bunch of frames at bunch number {}".format(number))
+            flag=1
+        else:
+            print('Bunch Normal')
+    if flag==1:
+        print("Anomalous Events detected")
 
 def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_videos):
     import numpy as np
@@ -48,7 +60,6 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
     save_path = os.path.join(job_folder, 'result', str(epoch))
     os.makedirs(save_path, exist_ok=True)
 
-    sr_test = []
     #loop on all videos in the test data
     for videoid in range(n_videos):
         videoname = '{0}_{1:02d}.h5'.format(dataset, videoid+1)
@@ -70,14 +81,5 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
 
         #calculate errors
         et = t_predict(temporal_model, X_test, t)
-        sa = anomaly_score(et)
-        sr = 1-sa
-        sr_test.append(sr)
         
-        #####Next: sr is a matrix? how should I plot the error to know which one is abnormal?
-    plt.plot(sr_test)
-    plt.ylabel('regularity score Sr(t)')
-    plt.xlabel('frame t')
-    plt.show()
-
 
