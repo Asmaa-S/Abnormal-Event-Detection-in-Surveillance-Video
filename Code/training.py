@@ -27,7 +27,7 @@ def train(dataset, job_folder, logger, video_root_path):
     import os
     import numpy as np
     from preprocessing import preprocess_data
-    from keras.callbacks import ModelCheckpoint, EarlyStopping
+    from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
     from custom_callback import LossHistory
     import matplotlib.pyplot as plt
     try:
