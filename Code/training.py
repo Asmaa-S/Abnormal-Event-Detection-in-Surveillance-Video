@@ -30,6 +30,7 @@ def train(dataset, job_folder, logger, video_root_path):
     from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
     from custom_callback import LossHistory
     import matplotlib.pyplot as plt
+    import tensorflow as tf
     try:
         from keras.utils.io_utils import HDF5Matrix
     except ImportError:
