@@ -1,4 +1,4 @@
-#This file is for running training only
+# This file is for running training only
 
 def handle_exception(exc_type, exc_value, exc_traceback):
     if issubclass(exc_type, KeyboardInterrupt):
@@ -7,7 +7,6 @@ def handle_exception(exc_type, exc_value, exc_traceback):
         return
     logger.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
 
-####################################################################
 
 import logging
 import datetime
@@ -17,16 +16,17 @@ import coloredlogs
 from training import train
 import uuid
 from shutil import copyfile
+import tensorflow as tf
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logger = logging.getLogger()
-device = 'gpu0'
+device = tf.test.gpu_device_name()
 
-video_root_path='/content/drive/MyDrive/Grad Project/data/UCSD'
-dataset = 'UCSDped1' 
+video_root_path = 'UCSD'
+dataset = 'UCSDped1'
 
 job_uuid = str(uuid.uuid4())
-job_folder = os.path.join(video_root_path,dataset,'logs/jobs'.format(dataset), job_uuid)
+job_folder = os.path.join(video_root_path, dataset, 'logs/jobs'.format(dataset), job_uuid)
 os.makedirs(job_folder)
 
 copyfile('config.yml', os.path.join(job_folder, 'config.yml'))
@@ -56,7 +56,6 @@ elif device == 'gpu1':
 elif device == 'gpu':
     os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
     logger.debug("Using GPU 0 and 1")
-
 
 train(dataset, job_folder, logger, video_root_path)
 
