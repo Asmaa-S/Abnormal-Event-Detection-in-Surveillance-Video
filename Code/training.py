@@ -13,7 +13,8 @@ try:
     from tnsorflow.keras.utils.io_utils import HDF5Matrix
 except ImportError:
     import tensorflow_io as tfio
-import warning
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 def compile_model(model, loss, optimizer):
     """
