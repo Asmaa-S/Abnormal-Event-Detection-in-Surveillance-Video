@@ -1,6 +1,6 @@
 
 import yaml
-from generator import generator
+from generator import generator, data_from_h5,split_data_from_h5
 import h5py
 import os
 import numpy as np
@@ -13,7 +13,7 @@ try:
     from tnsorflow.keras.utils.io_utils import HDF5Matrix
 except ImportError:
     import tensorflow_io as tfio
-
+import warning
 
 def compile_model(model, loss, optimizer):
     """
@@ -74,17 +74,18 @@ def train(dataset, job_folder, logger, video_root_path):
         try:
             data = np.array(HDF5Matrix(os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length)), 'data'))
             data = np.reshape(data, (len(data), 227,227,time_length, 1))
+            use_generator = False
         except:
             #path = os.path.join(video_root_path, '{}/training_h5_t{}'.format(dataset, time_length))
-            #data = tf.data.Dataset.list_files(path, seed=0)
-            #data = data.map(tfio.IOTensor.from_hdf5)
+
             hdf5_path = os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length))
-            data = tf.data.Dataset.from_generator(
-                    generator(hdf5_path),
-                    tf.uint8,
-                    tf.TensorShape([time_length,227,227,1]))
 
+            dset_train, dset_val = split_data_from_h5(hdf5_path, 304)
 
+            steps_per_epoch = len(dset_train) // batch_size
+            validation_steps = len(dset_val) // batch_size
+
+            use_generator = True
 
     snapshot = ModelCheckpoint(os.path.join(job_folder,
                'model_snapshot_e{epoch:03d}_{val_loss:.6f}.h5'))
@@ -95,14 +96,23 @@ def train(dataset, job_folder, logger, video_root_path):
 
     logger.info("Initializing training...")
 
-    history = model.fit(
-        data, data,
-        batch_size=batch_size,
-        epochs=nb_epoch,
-        validation_split=0.2,
-        shuffle='batch',
-        callbacks=[snapshot, earlystop, history_log]
-    )
+    if not use_generator:
+        history = model.fit(
+            data, data,
+            batch_size=batch_size,
+            epochs=nb_epoch,
+            validation_split=0.2,
+            shuffle='batch',
+            callbacks=[snapshot, earlystop, history_log]
+        )
+    else:
+        history = model.fit_generator(generator(batch_size, dset_train),
+                            steps_per_epoch=steps_per_epoch,
+                            epochs=nb_epoch,
+                            callbacks= [snapshot, earlystop, history_log],
+                            validation_steps=validation_steps,
+                            validation_data=generator(batch_size, dset_val))
+
 
     logger.info("Training completed!")
     np.save(os.path.join(job_folder, 'train_profile.npy'), history.history)
