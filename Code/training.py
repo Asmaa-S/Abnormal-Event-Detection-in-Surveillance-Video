@@ -1,4 +1,20 @@
 
+import yaml
+from generator import generator
+import h5py
+import os
+import numpy as np
+from preprocessing import preprocess_data
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from custom_callback import LossHistory
+import matplotlib.pyplot as plt
+import tensorflow as tf
+try:
+    from tnsorflow.keras.utils.io_utils import HDF5Matrix
+except ImportError:
+    import tensorflow_io as tfio
+
+
 def compile_model(model, loss, optimizer):
     """
         Compiles the given model with a specific loss and optimizer
@@ -23,18 +39,6 @@ def train(dataset, job_folder, logger, video_root_path):
     """
         Build and train the model
     """
-    import yaml
-    import os
-    import numpy as np
-    from preprocessing import preprocess_data
-    from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
-    from custom_callback import LossHistory
-    import matplotlib.pyplot as plt
-    import tensorflow as tf
-    try:
-        from keras.utils.io_utils import HDF5Matrix
-    except ImportError:
-       import tensorflow_io as tfio
 
     logger.debug("Loading configs from {}".format(os.path.join(job_folder, 'config.yml')))
     with open(os.path.join(job_folder, 'config.yml'), 'r') as ymlfile:
@@ -62,7 +66,7 @@ def train(dataset, job_folder, logger, video_root_path):
         yaml.dump(yaml_string, outfile)
 
     logger.info("Preparing training and testing data")
-    preprocess_data(logger, dataset, time_length, video_root_path)
+    #preprocess_data(logger, dataset, time_length, video_root_path)
     if time_length <= 0:
         data = np.load(os.path.join(video_root_path, '{0}/training_frames_t0.npy'.format(dataset)))
         #data = np.reshape(data, (len(data), 227,227,time_length, 1))
@@ -71,9 +75,16 @@ def train(dataset, job_folder, logger, video_root_path):
             data = np.array(HDF5Matrix(os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length)), 'data'))
             data = np.reshape(data, (len(data), 227,227,time_length, 1))
         except:
-            path = os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length))
-            data = tf.data.Dataset.list_files(path, seed=0)
-            data = data.map(tfio.IOTensor.from_hdf5)
+            #path = os.path.join(video_root_path, '{}/training_h5_t{}'.format(dataset, time_length))
+            #data = tf.data.Dataset.list_files(path, seed=0)
+            #data = data.map(tfio.IOTensor.from_hdf5)
+            hdf5_path = os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length))
+            data = tf.data.Dataset.from_generator(
+                    generator(hdf5_path),
+                    tf.uint8,
+                    tf.TensorShape([time_length,227,227,1]))
+
+
 
     snapshot = ModelCheckpoint(os.path.join(job_folder,
                'model_snapshot_e{epoch:03d}_{val_loss:.6f}.h5'))

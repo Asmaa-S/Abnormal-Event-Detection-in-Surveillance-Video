@@ -1,13 +1,4 @@
 # This file is for running training only
-
-def handle_exception(exc_type, exc_value, exc_traceback):
-    if issubclass(exc_type, KeyboardInterrupt):
-        logger.warning("Ctrl + C triggered by user, training ended prematurely")
-        sys.__excepthook__(exc_type, exc_value, exc_traceback)
-        return
-    logger.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
-
-
 import logging
 import datetime
 import os
@@ -18,9 +9,21 @@ import uuid
 from shutil import copyfile
 import tensorflow as tf
 
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        logger.warning("Ctrl + C triggered by user, training ended prematurely")
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+    logger.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+
+
+
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logger = logging.getLogger()
-device = tf.test.gpu_device_name()
+
+devices = {0: 'cpu', 1: 'gpu0', 2: 'gpu'}
+device = devices[len(tf.config.list_physical_devices('GPU'))]
 
 video_root_path = 'UCSD'
 dataset = 'UCSDped1'

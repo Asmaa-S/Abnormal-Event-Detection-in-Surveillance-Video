@@ -1,3 +1,6 @@
+
+
+
 def calc_mean(dataset, video_root_path):
     '''
     This function is used to calculate the mean of all frames in the training dataset
@@ -53,7 +56,6 @@ def calc_mean(dataset, video_root_path):
     np.save(os.path.join(video_root_path, dataset, 'mean_frame_224.npy'), frame_mean)
 
 
-######################################################################################3
 def subtract_mean(dataset, video_root_path, is_combine=False):
     '''
   This function substracts the mean found in video_root_path/dataset/mean_frame_224.npy from all the frame files
@@ -179,7 +181,6 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
                         testing_combine)
 
 
-#################################################################################################
 def build_h5(dataset, train_or_test, t, video_root_path):
     '''
     Build h5 files for each test/train video
@@ -236,8 +237,6 @@ def build_h5(dataset, train_or_test, t, video_root_path):
     build_volume(train_or_test, num_videos, time_length=t)
 
 
-###########################################################################################3
-
 def combine_dataset(dataset, t, video_root_path):
     '''
   This function combines multiple .h5 files together forming bigger files (volumes)
@@ -280,12 +279,11 @@ def combine_dataset(dataset, t, video_root_path):
     output_file.close()
 
 
-######################################################################################
 
 def preprocess_data(logger, dataset, t, video_root_path):
     '''
     This function combines all the functions before to perform the preprocessing.
-  '''
+    '''
     import os
     import yaml
 
