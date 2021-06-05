@@ -1,6 +1,6 @@
 '''
     Testing requires the following steps:
-        1- predicting a volume and calculating the mean square error between the
+        1- predicting a volume and calculating the mean square distance between the
             original & predicted frame --> e(t)
         2- calculating the anomaly score as follows:
             sa = [e(t) - min(e(t))]/max(e(t))
