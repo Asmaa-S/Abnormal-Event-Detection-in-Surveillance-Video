@@ -8,7 +8,7 @@
             sr = 1-sa
         4- compare score to a threshold
 '''
-def score(x1, x2):
+def regularity_score(x1, x2):
     import numpy as np
 
     cost = np.array(np.linalg.norm(np.subtract(x1,x2)))
@@ -22,21 +22,22 @@ def t_predict (model, X_test, t =4):
     flag = 0
     X_test=X_test.reshape(-1,227,227,10)
     X_test=np.expand_dims(X_test,axis=4)
-    
+
     for number,bunch in enumerate(X_test):
         n_bunch=np.expand_dims(bunch,axis=0)
         reconstructed_bunch = model.predict(n_bunch)
-        loss= score(n_bunch,reconstructed_bunch)
+        score= regularity_score(n_bunch,reconstructed_bunch)
 
-        threshold = 0.1
-        print("loss = ", loss)
-        if loss>threshold:
+        threshold = 0.5
+
+        print("regularity_score = ", score)
+
+        if score<threshold:
             print("Anomalous bunch of frames at bunch number {}".format(number))
-            flag=1
+
         else:
             print('Bunch Normal')
-    if flag==1:
-        print("Anomalous Events detected")
+
 
 def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_videos):
     import numpy as np

@@ -19,7 +19,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 
 #Specify Testing Parameters
 # video_root_path='UCSD'
-video_root_path='UCSD'
+video_root_path= '/content/drive/MyDrive/Grad Project/data/UCSD'
 dataset = 'UCSDped1' 
 
 #these parameters identify which snapshot of the model you care to test

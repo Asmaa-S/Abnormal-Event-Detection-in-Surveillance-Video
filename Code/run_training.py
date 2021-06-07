@@ -25,7 +25,7 @@ logger = logging.getLogger()
 devices = {0: 'cpu', 1: 'gpu0', 2: 'gpu'}
 device = devices[len(tf.config.list_physical_devices('GPU'))]
 
-video_root_path = 'UCSD'
+video_root_path = '/content/drive/MyDrive/Grad Project/data/UCSD'
 dataset = 'UCSDped1'
 
 job_uuid = str(uuid.uuid4())
