@@ -12,7 +12,8 @@ import tensorflow as tf
 try:
     from tnsorflow.keras.utils.io_utils import HDF5Matrix
 except ImportError:
-    import tensorflow_io as tfio
+    pass
+    #import tensorflow_io as tfio
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 

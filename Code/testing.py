@@ -43,9 +43,9 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
     from keras.models import load_model
     import os
     import h5py
-    from keras.utils.io_utils import HDF5Matrix
+    #from keras.utils.io_utils import HDF5Matrix
     import matplotlib.pyplot as plt
-    from scipy.misc import imresize, toimage
+    #from scipy.misc import imresize, toimage
     import matplotlib.pyplot as plt
 
     #fetching paths to test_data, job_folder and trained model
@@ -68,18 +68,20 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
 
         if t > 0:
             f = h5py.File(filepath, 'r')
-            filesize = f['data'].shape[0]
-            f.close()
+            X_test = f['data']
+            filesize = X_test.shape[0]
+
         
         #load data
         if t > 0: #if there was a time_length for the volumes
-            X_test = HDF5Matrix(filepath, 'data')
-            X_test = np.array(X_test)
+            #X_test = HDF5Matrix(filepath, 'data')
+            X_test = np.asarray(X_test)
             #X_test = np.reshape(X_test, (len(X_test), 227,227,t, 1))
         else:
             X_test = np.load(os.path.join(video_root_path, '{0}/testing_numpy/testing_frames_{1:03d}.npy'.format(dataset, videoid+1))).reshape(-1, 227, 227, 1)
 
         #calculate errors
         et = t_predict(temporal_model, X_test, t)
+        f.close()
         
 
