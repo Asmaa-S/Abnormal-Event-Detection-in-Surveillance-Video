@@ -11,9 +11,9 @@
 def regularity_score(x1, x2):
     import numpy as np
 
-    cost = np.array(np.linalg.norm(np.subtract(x1,x2)))
-    sa = (cost - np.min(cost)) / np.max(cost)
-    sr = 1.0 - sa
+    frame_diff = np.array(np.subtract(x1, x2)) ** 2
+    sa = (frame_diff - np.min(frame_diff)) / np.max(frame_diff)
+    sr = 1.0 - abs(sa.mean())
     return sr
 
 def t_predict (model, X_test, t =4):
