@@ -18,6 +18,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 ###################################################################################################
 
 #Specify Testing Parameters
+# video_root_path='UCSD'
 video_root_path='UCSD'
 dataset = 'UCSDped1' 
 
