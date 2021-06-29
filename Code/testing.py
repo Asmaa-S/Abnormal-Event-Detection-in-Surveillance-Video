@@ -8,12 +8,12 @@
             sr = 1-sa
         4- compare score to a threshold
 '''
-def score(x1, x2):
+def regularity_score(x1, x2):
     import numpy as np
 
-    cost = np.array(np.linalg.norm(np.subtract(x1,x2)))
-    sa = (cost - np.min(cost)) / np.max(cost)
-    sr = 1.0 - sa
+    frame_diff = np.array(np.subtract(x1, x2)) ** 2
+    sa = (frame_diff - np.min(frame_diff)) / np.max(frame_diff)
+    sr = 1.0 - abs(sa.mean())
     return sr
 
 def t_predict (model, X_test, t =4):
@@ -22,30 +22,31 @@ def t_predict (model, X_test, t =4):
     flag = 0
     X_test=X_test.reshape(-1,227,227,10)
     X_test=np.expand_dims(X_test,axis=4)
-    
+
     for number,bunch in enumerate(X_test):
         n_bunch=np.expand_dims(bunch,axis=0)
         reconstructed_bunch = model.predict(n_bunch)
-        loss= score(n_bunch,reconstructed_bunch)
+        score= regularity_score(n_bunch,reconstructed_bunch)
 
-        threshold = 0.1
-        print("loss = ", loss)
-        if loss>threshold:
+        threshold = 0.5
+
+        print("regularity_score = ", score)
+
+        if score<threshold:
             print("Anomalous bunch of frames at bunch number {}".format(number))
-            flag=1
+
         else:
             print('Bunch Normal')
-    if flag==1:
-        print("Anomalous Events detected")
+
 
 def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_videos):
     import numpy as np
     from keras.models import load_model
     import os
     import h5py
-    from keras.utils.io_utils import HDF5Matrix
+    #from keras.utils.io_utils import HDF5Matrix
     import matplotlib.pyplot as plt
-    from scipy.misc import imresize, toimage
+    #from scipy.misc import imresize, toimage
     import matplotlib.pyplot as plt
 
     #fetching paths to test_data, job_folder and trained model
@@ -68,18 +69,20 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
 
         if t > 0:
             f = h5py.File(filepath, 'r')
-            filesize = f['data'].shape[0]
-            f.close()
+            X_test = f['data']
+            filesize = X_test.shape[0]
+
         
         #load data
         if t > 0: #if there was a time_length for the volumes
-            X_test = HDF5Matrix(filepath, 'data')
-            X_test = np.array(X_test)
+            #X_test = HDF5Matrix(filepath, 'data')
+            X_test = np.asarray(X_test)
             #X_test = np.reshape(X_test, (len(X_test), 227,227,t, 1))
         else:
             X_test = np.load(os.path.join(video_root_path, '{0}/testing_numpy/testing_frames_{1:03d}.npy'.format(dataset, videoid+1))).reshape(-1, 227, 227, 1)
 
         #calculate errors
         et = t_predict(temporal_model, X_test, t)
+        f.close()
         
 

@@ -2,6 +2,8 @@ from keras.callbacks import Callback
 import numpy as np
 import os
 import csv
+import tensorflow as tf
+
 
 class LossHistory(Callback):
     def __init__(self, job_folder, logger):
