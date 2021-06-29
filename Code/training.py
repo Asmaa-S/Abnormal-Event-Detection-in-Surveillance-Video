@@ -75,7 +75,7 @@ def train(dataset, job_folder, logger, video_root_path):
     else:
         try:
             data = np.array(HDF5Matrix(os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length)), 'data'))
-            data = np.reshape(data, (len(data), 227,227,time_length, 1))
+            #data = np.reshape(data, (len(data), 227,227,time_length, 1))
             use_generator = False
         except:
             #path = os.path.join(video_root_path, '{}/training_h5_t{}'.format(dataset, time_length))

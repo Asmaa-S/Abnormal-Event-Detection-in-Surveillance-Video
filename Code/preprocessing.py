@@ -1,6 +1,4 @@
 
-
-
 def calc_mean(dataset, video_root_path):
     '''
     This function is used to calculate the mean of all frames in the training dataset
@@ -21,7 +19,6 @@ def calc_mean(dataset, video_root_path):
     frame_sum = None
 
     try:
-
         # loop on all the folders in the directory video_root_path/dataset/training_frames
         for frame_folder in os.listdir(frame_path):
             # exceptions related to our dataset
@@ -88,6 +85,7 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
     # open & get the parameters from the configuration file
     with open('config.yml', 'r') as ymlfile:
         cfg = yaml.load(ymlfile)
+    
     # is_clip: make sure values are within [0:1]?
     is_clip = cfg.get('clip')
     # add noise to the frames?
@@ -161,12 +159,14 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
                     frame_value -= frame_mean
                     testing_frames_vid.append(frame_value)
             testing_frames_vid = np.array(testing_frames_vid)
+            
             if noise_factor is not None and noise_factor > 0:
                 testing_frames_vid = add_noise(testing_frames_vid, noise_factor)
             if is_clip is not None and is_clip:
                 testing_frames_vid = np.clip(testing_frames_vid, 0, 1)
             np.save(os.path.join(video_root_path, dataset, 'testing_numpy',
                                  'testing_frames_{}.npy'.format(frame_folder[-3:])), testing_frames_vid)
+            
             if is_combine:
                 testing_combine.extend(testing_frames_vid.reshape(-1, 227, 227, 1))
 
