@@ -68,6 +68,7 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
     from skimage.io import imread
     import numpy as np
     from skimage.transform import resize
+    from skimage.color import rgb2gray
 
     # add noise to the data frames
 
@@ -109,7 +110,7 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
                     # frame path: video_root_path/dataset/training_frames/frame_folder/frame_file
                     frame_filename = os.path.join(frame_path, frame_folder, frame_file)
                     # normalize frame
-                    frame_value = imread(frame_filename, as_grey=True, plugin='pil') / 256
+                    frame_value = rgb2gray(imread(frame_filename, as_grey=True, plugin='pil')) / 256
                     # resize
                     frame_value = resize(frame_value, (227, 227), mode='reflect')
                     assert (0. <= frame_value.all() <= 1.)
@@ -150,7 +151,7 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
                     frame_filename = os.path.join(frame_path, frame_folder, frame_file)
                     # exceptions related to OUR dataset
                     try:
-                        frame_value = imread(frame_filename, as_grey=True, plugin='pil') / 256
+                        frame_value = rgb2gray(imread(frame_filename, as_grey=True, plugin='pil')) / 256
                     except:
                         print("Error in: ", frame_file)
                         continue
@@ -280,7 +281,6 @@ def combine_dataset(dataset, t, video_root_path):
             where_to_start_appending = total_rows
 
     output_file.close()
-
 
 
 def preprocess_data(logger, dataset, t, video_root_path):
