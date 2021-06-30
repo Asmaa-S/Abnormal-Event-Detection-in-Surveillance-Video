@@ -12,14 +12,13 @@ def split_data_from_h5(h5, train_size):
         ds = hf['data']
         train = ds[0:train_size]
         val =  ds[train_size:]
-        sh = train.shape
-    return train.reshape(sh[0], 227, 227, sh[1], 1), val.reshape(len(val), 227, 227, sh[1], 1)
+    return train, val
 
 
 
 def data_from_h5(h5):
     with h5py.File(h5, 'r') as hf:
-        ds = h5['data']
+        ds = hf['data']
     return ds
 
 

@@ -73,21 +73,16 @@ def train(dataset, job_folder, logger, video_root_path):
         data = np.load(os.path.join(video_root_path, '{0}/training_frames_t0.npy'.format(dataset)))
         #data = np.reshape(data, (len(data), 227,227,time_length, 1))
     else:
-        try:
-            data = np.array(HDF5Matrix(os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length)), 'data'))
-            #data = np.reshape(data, (len(data), 227,227,time_length, 1))
-            use_generator = False
-        except:
-            #path = os.path.join(video_root_path, '{}/training_h5_t{}'.format(dataset, time_length))
+        #path = os.path.join(video_root_path, '{}/training_h5_t{}'.format(dataset, time_length))
 
-            hdf5_path = os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length))
+        hdf5_path = os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length))
 
-            dset_train, dset_val = split_data_from_h5(hdf5_path, 304)
+        dset_train, dset_val = split_data_from_h5(hdf5_path, 304)
 
-            steps_per_epoch = len(dset_train) // batch_size
-            validation_steps = len(dset_val) // batch_size
+        steps_per_epoch = len(dset_train) // batch_size
+        validation_steps = len(dset_val) // batch_size
 
-            use_generator = True
+        use_generator = True
 
     snapshot = ModelCheckpoint(os.path.join(job_folder,
                'model_snapshot_e{epoch:03d}_{val_loss:.6f}.h5'))

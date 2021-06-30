@@ -10,31 +10,27 @@
 '''
 def regularity_score(x1, x2):
     import numpy as np
-
-    frame_diff = np.array(np.subtract(x1, x2)) ** 2
-    sa = (frame_diff - np.min(frame_diff)) / np.max(frame_diff)
-    sr = 1.0 - abs(sa.mean())
+    from skimage import measure
+    similarity_index = measure.compare_ssim(x1[0], x2[0], multichannel =True)
+    sr = 1.0 - similarity_index
+    #frame_diff = np.array(np.subtract(x1, x2)) ** 2
+    #sa = (frame_diff - np.min(frame_diff)) / np.max(frame_diff)
+    #sr = 1.0 - abs(sa.mean())
     return sr
 
-def t_predict (model, X_test, t =4):
+def t_predict_volumes(model, X_test, t =4):
     import numpy as np
 
     flag = 0
-    X_test=X_test.reshape(-1,227,227,10)
-    X_test=np.expand_dims(X_test,axis=4)
 
     for number,bunch in enumerate(X_test):
         n_bunch=np.expand_dims(bunch,axis=0)
         reconstructed_bunch = model.predict(n_bunch)
         score= regularity_score(n_bunch,reconstructed_bunch)
-
         threshold = 0.5
-
         print("regularity_score = ", score)
-
-        if score<threshold:
+        if score > threshold:
             print("Anomalous bunch of frames at bunch number {}".format(number))
-
         else:
             print('Bunch Normal')
 
@@ -75,14 +71,12 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
         
         #load data
         if t > 0: #if there was a time_length for the volumes
-            #X_test = HDF5Matrix(filepath, 'data')
             X_test = np.asarray(X_test)
-            #X_test = np.reshape(X_test, (len(X_test), 227,227,t, 1))
         else:
-            X_test = np.load(os.path.join(video_root_path, '{0}/testing_numpy/testing_frames_{1:03d}.npy'.format(dataset, videoid+1))).reshape(-1, 227, 227, 1)
+            X_test = np.load(os.path.join(video_root_path, '{0}/testing_numpy/testing_frames_{1:03d}.npy'.format(dataset, videoid+1)))
 
         #calculate errors
-        et = t_predict(temporal_model, X_test, t)
+        et = t_predict_volumes(temporal_model, X_test, t)
         f.close()
         
 
