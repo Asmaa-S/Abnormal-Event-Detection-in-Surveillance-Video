@@ -4,8 +4,8 @@ import skvideo.io
 from skimage.transform import resize
 from skimage.io import imsave
 
-video_root_path = '/share/data/videos'
-size = (224, 224)
+video_root_path = '/content/drive/MyDrive/Grad Project/data'
+size = (227, 227)
 
 def video_to_frame(dataset, train_or_test):
     video_path = os.path.join(video_root_path, dataset, '{}_videos'.format(train_or_test))
@@ -25,5 +25,5 @@ def video_to_frame(dataset, train_or_test):
               count += 1
 
 # avenue
-video_to_frame('avenue', 'training')
-video_to_frame('avenue', 'testing')
+video_to_frame('Avenue', 'training')
+video_to_frame('Avenue', 'testing')
