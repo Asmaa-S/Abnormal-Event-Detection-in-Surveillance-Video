@@ -25,12 +25,12 @@ def conv_lstm_ae():
     conv2 = TimeDistributed(BatchNormalization())(conv2)
     conv2 = TimeDistributed(Activation('relu'))(conv2)
 
-    convlstm1 = ConvLSTM2D(64, kernel_size=(3, 3), padding='same', dropout=0.4, recurrent_dropout=0.3,
+    convlstm1 = ConvLSTM2D(64, kernel_size=(3, 3), padding='same',  
                             return_sequences=True, name='convlstm1',kernel_regularizer='l2')(conv2)
     convlstm2 = ConvLSTM2D(32, kernel_size=(3, 3), padding='same', return_sequences=True,
-                        dropout=0.3, name='convlstm2',kernel_regularizer='l2')(convlstm1)
+                             name='convlstm2',kernel_regularizer='l2')(convlstm1)
     convlstm3 = ConvLSTM2D(64, kernel_size=(3, 3), padding='same', return_sequences=True,
-                    dropout=0.5, name='convlstm3',kernel_regularizer='l2')(convlstm2)
+                         name='convlstm3',kernel_regularizer='l2')(convlstm2)
     
     deconv1 = TimeDistributed(Conv2DTranspose(128, kernel_size=(5, 5), padding='valid', strides=(2, 2), name='deconv1'))(convlstm3)
     deconv1 = TimeDistributed(BatchNormalization())(deconv1)

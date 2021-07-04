@@ -1,5 +1,5 @@
 import yaml
-from generator_helpers import train_model,plot_loss
+from generator import train_model,plot_loss
 import h5py
 import os
 import numpy as np
@@ -67,7 +67,7 @@ def train(dataset, job_folder, logger, video_root_path):
     with h5py.File(hdf5_path, 'r') as hf:
         sample_counts = hf['data'].shape[0]
     
-    train_model(model, hdf5_path, 0.2, batch_size, sample_counts,nb_epoch,logger,job_folder)
+    history = train_model(model, hdf5_path, 0.2, batch_size, sample_counts,nb_epoch,logger,job_folder)
     logger.info("Training completed!")
 
-    plot_loss(history,job_folder)
+    plot_loss(history,job_folder,nb_epoch,logger)

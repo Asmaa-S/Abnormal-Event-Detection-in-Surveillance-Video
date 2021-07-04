@@ -17,7 +17,7 @@ def train_model (model, video_data_fn, validation_ratio, batch_size, sample_coun
 
     with h5py.File(video_data_fn, "r") as video_data:
          sample_idxs = range(0, sample_count)
-         sample_idxs = np.random.permutation(sample_idxs)
+         #sample_idxs = np.random.permutation(sample_idxs)
          training_sample_idxs = sample_idxs[0:int((1-validation_ratio)*sample_count)]
          validation_sample_idxs = sample_idxs[int((1-validation_ratio)*sample_count):]
          
@@ -34,8 +34,7 @@ def train_model (model, video_data_fn, validation_ratio, batch_size, sample_coun
                             steps_per_epoch =len(training_sample_idxs)//batch_size,
                             validation_steps =len(validation_sample_idxs)//batch_size,
                             epochs=nb_epoch,
-                            callbacks= [snapshot, earlystop, history_log],
-                            workers=4, use_multiprocessing=True)
+                            callbacks= [snapshot, earlystop, history_log])
     return history
                              
 def generate_training_sequences(batch_size, video_data, training_sample_idxs):
@@ -83,11 +82,11 @@ def generate_validation_sequences(batch_size, video_data, validation_sample_idxs
             yield (np.array(data),np.array(data))
 
 
-def plot_loss(history,job_folder):
+def plot_loss(history,job_folder,nb_epoch,logger):
     '''
         Plot the loss of the validation & training
     '''
-    np.save(os.path.join(job_folder, 'train_profile.npy'), history.history,nb_epoch)
+    np.save(os.path.join(job_folder, 'train_profile.npy'), history.history, nb_epoch)
     n_epoch = len(history.history['loss'])
     logger.info("Plotting training profile for {} epochs".format(n_epoch))
     plt.plot(range(1, n_epoch+1),
