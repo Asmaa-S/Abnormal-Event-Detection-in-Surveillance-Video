@@ -2,6 +2,11 @@ def get_gt_range(video_root_path,dataset, vid_idx):
     """ Get the ground truth range for abnormal event in a video
     """
     import numpy as np
+    if dataset = 'UCSDped1':
+        dataset = 'UCSD_ped1'
+    elif dataset == 'UCSDped2':
+        dataset = 'UCSD_ped2'
+    
     ret =  np.loadtxt('{0}/{1}/gt_files/gt_{1}_vid{2:02d}.txt'.format(video_root_path,dataset, vid_idx+1))
     if(ret.shape.__len__() == 1):
         return [ret]
