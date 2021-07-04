@@ -23,9 +23,9 @@ video_root_path= '/content/drive/MyDrive/Grad Project/data/UCSD'
 dataset = 'UCSDped1' 
 
 #these parameters identify which snapshot of the model you care to test
-job_uuid = '55f22274-4d37-4f9c-8e25-6b9853420e62'
-epoch = 50
-val_loss = 0.002708
+job_uuid = '537a2f70-4a2d-4a4b-80d8-a9e93858ae97'
+epoch = 39
+val_loss = 0.004629
 time_length = 10
 test_data = [epoch, val_loss, job_uuid, time_length]
 
