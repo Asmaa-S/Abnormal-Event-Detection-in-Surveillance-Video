@@ -8,7 +8,10 @@
             sr = 1-sa
         4- compare score to a threshold
 '''
+
 def regularity_score(x1, x2):
+    """ Calculate a regularity score
+    """
     import numpy as np
     from skimage import measure
     similarity_index = measure.compare_ssim(x1[0], x2[0], multichannel =True)
@@ -18,32 +21,45 @@ def regularity_score(x1, x2):
     #sr = 1.0 - abs(sa.mean())
     return sr
 
-def t_predict_volumes(model, X_test, t =4):
+def score_frames(n_bunch,reconstructed_bunch):
+    """ Predict score on frames of a bunch
+    """
+    frame_scores = []
+    for i,frame in enumerate(n_bunch):
+        frame_reconstructed = reconstructed_bunch[i]
+        score= regularity_score(frame,frame_reconstructed)
+        frame_scores.append(score)
+    return frame_scores
+
+def t_predict_volumes(model, X_test, t =4, predict_frames = False):
+    """ Predict on volumes
+    """
     import numpy as np
-
-    flag = 0
-
+    video_scores = []
     for number,bunch in enumerate(X_test):
         n_bunch=np.expand_dims(bunch,axis=0)
         reconstructed_bunch = model.predict(n_bunch)
-        score= regularity_score(n_bunch,reconstructed_bunch)
-        threshold = 0.5
-        print("regularity_score = ", score)
-        if score > threshold:
-            print("Anomalous bunch of frames at bunch number {}".format(number))
+        if not predict_frames:
+            score= regularity_score(n_bunch,reconstructed_bunch)
+            video_scores.append(score)
+            threshold = 0.5
+            print("regularity_score = ", score)
+            if score > threshold:
+                print("Anomalous bunch of range {0} to {1}".format(number, number+t))
+            else:
+                print("Bunch Normalof range {0} to {1}".format(number, number+t))
         else:
-            print('Bunch Normal')
-
+            video_scores.append(score_frames(n_bunch,reconstructed_bunch))
+        return video_scores
 
 def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_videos):
     import numpy as np
     from keras.models import load_model
     import os
     import h5py
-    #from keras.utils.io_utils import HDF5Matrix
     import matplotlib.pyplot as plt
-    #from scipy.misc import imresize, toimage
     import matplotlib.pyplot as plt
+    from evaluate import plot_regularity_score
 
     #fetching paths to test_data, job_folder and trained model
     test_dir = os.path.join(video_root_path, '{0}/testing_h5_t{1}'.format(dataset, t))
@@ -52,10 +68,6 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
 
     #load model
     temporal_model = load_model(os.path.join(job_folder, model_filename))
-
-    #where to save results?
-    save_path = os.path.join(job_folder, 'result', str(epoch))
-    os.makedirs(save_path, exist_ok=True)
 
     #loop on all videos in the test data
     for videoid in range(n_videos):
@@ -76,7 +88,8 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
             X_test = np.load(os.path.join(video_root_path, '{0}/testing_numpy/testing_frames_{1:03d}.npy'.format(dataset, videoid+1)))
 
         #calculate errors
-        et = t_predict_volumes(temporal_model, X_test, t)
+        score_vid = t_predict_volumes(temporal_model, X_test, t)
+        plot_regularity_score(video_root_path, dataset, videoid, logger, score_vid)
         f.close()
         
 
