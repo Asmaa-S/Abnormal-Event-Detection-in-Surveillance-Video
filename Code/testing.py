@@ -20,10 +20,15 @@ def get_gt_vid(video_root_path,dataset, vid_idx, pred_vid):
     
     gt_vid_raw = np.loadtxt('{0}/{1}/gt_files/gt_{2}_vid{3:02d}.txt'.format(video_root_path, dataset,gt_data, vid_idx+1))
     gt_vid = np.zeros_like(pred_vid)
-
-    start = int(gt_vid_raw[0])
-    end = int(gt_vid_raw[1])
-    gt_vid[start:end] = 1
+    try:
+        start = int(gt_vid_raw[0])
+        end = int(gt_vid_raw[1])
+        gt_vid[start:end] = 1
+    except:
+        for event in gt_vid_raw:
+            start = int(event[0])
+            end = int(event[1])
+            gt_vid[start:end] = 1
 
     return gt_vid
 
@@ -71,6 +76,7 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
     import matplotlib.pyplot as plt
     import matplotlib.pyplot as plt
     from evaluate import plot_regularity_score, plot_reconstruction_error,calc_auc_overall
+    from PIL import Image
 
     #fetching paths to test_data, job_folder and trained model
     test_dir = os.path.join(video_root_path, '{0}/testing_h5_t{1}'.format(dataset, t))
@@ -108,8 +114,8 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
         plot_regularity_score(video_root_path, dataset, videoid, logger, score_vid)
         
         #for AUC
-        pred_vid = imresize(np.expand_dims(recon_error,1), (sz+t,1))
-        pred_vid = np.squeeze(raw_costs)
+        pred_vid = Image.fromarray(np.expand_dims(recon_error,1)).resize((sz+t,1))
+        pred_vid = np.squeeze(pred_vid)
         gt_vid = get_gt_vid(video_root_path, dataset, videoid, pred_vid)
         all_gt.append(gt_vid)
         all_pred.append(pred_vid)

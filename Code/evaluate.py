@@ -88,7 +88,8 @@ def calc_auc_overall(logger, video_root_path, dataset, all_gt, all_pred):
     import numpy as np
     from sklearn.metrics import roc_auc_score, roc_curve
     import matplotlib.pyplot as plt
-
+    import os
+    
     all_gt = np.asarray(all_gt)
     all_pred = np.asarray(all_pred)
     all_gt = np.concatenate(all_gt).ravel()
