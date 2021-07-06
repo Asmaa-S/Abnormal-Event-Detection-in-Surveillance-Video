@@ -60,8 +60,6 @@ def subtract_mean(dataset, video_root_path, is_combine=False):
         - dataset: the name of the dataset folder 
         - video_root_path: the folder that contains all the datasets
         - is_combine: check whether to combine all videos data in one file/list 
-                --> I think used if we will not use volumes from the data
-      
   '''
     import os
     import yaml
@@ -198,7 +196,7 @@ def build_h5(dataset, train_or_test, t, video_root_path):
 
     print("==> {} {}".format(dataset, train_or_test))
 
-    def build_volume(train_or_test, num_videos, time_length):
+    def build_volume(train_or_test, num_videos, time_length, strides):
 
         '''
         create volumes out of the frames where each voulume has a certain time_length
@@ -207,6 +205,7 @@ def build_h5(dataset, train_or_test, t, video_root_path):
                 use "training" or "testing" as inputs
             - num_videos: number of videos in the dataset
             - time_length: the time length of each volume
+            - stride: The distances req. between two consecutive frames
         '''
         for i in tqdm(range(num_videos)):
             # minor fix: don't recalculate already existing files
@@ -222,23 +221,27 @@ def build_h5(dataset, train_or_test, t, video_root_path):
             num_frames = data_frames.shape[0]
 
             # num_of_volumes = num_of_frames_in_video - time_length +1 ----> Edit: Dina
-            data_only_frames = np.zeros((num_frames - time_length + 1, time_length, 227, 227, 1)).astype('float64')
-
-            vol = 0
-            for j in range(num_frames - time_length + 1):
-                data_only_frames[vol] = data_frames[j:j + time_length]  # Read a single volume
-                vol += 1
-
-            # h5 file path: video_root_path/dataset/(training^testing)_h5_t_(time_length)_(video_num)
+            clips = []
+            clip = np.zeros(shape=(time_length, 227, 227, 1))
+            cnt = 0
+            for stride in strides:
+                for start in range(0, stride+1):
+                    for i in range(start, num_frames, stride):
+                        clip[cnt, :, :, :] = data_frames[i]
+                        cnt = cnt + 1
+                        if cnt == time_length:
+                            clips.append(np.copy(clip))
+                            cnt = 0
+            clips = np.array(clips)
             with h5py.File(h5_path, 'w') as f:
                 if train_or_test == 'training':
-                    np.random.shuffle(data_only_frames)
-                f['data'] = data_only_frames
+                    np.random.shuffle(clips)
+                f['data'] = clips
 
-    os.makedirs(os.path.join(video_root_path, '{}/{}_h5_t{}'.format(dataset, train_or_test, t)), exist_ok=True)
+    os.makedirs(os.path.join(video_root_path, '{0}/{1}_h5_t{2}'.format(dataset, train_or_test, t)), exist_ok=True)
     # removed -1 in calculating the num_videos ----> Edit: Dina
-    num_videos = len(os.listdir(os.path.join(video_root_path, '{}/{}_frames'.format(dataset, train_or_test))))
-    build_volume(train_or_test, num_videos, time_length=t)
+    num_videos = len(os.listdir(os.path.join(video_root_path, '{0}/{1}_frames'.format(dataset, train_or_test))))
+    build_volume(train_or_test, num_videos, time_length=t, strides=[1,2,3])
 
 
 def combine_dataset(dataset, t, video_root_path):
@@ -338,12 +341,12 @@ def preprocess_data(logger, dataset, t, video_root_path):
     # If the file exists, then skip this step
     if t > 0:
         logger.debug("Step 3/4: Check if individual h5 files exists for {}".format(dataset))
-        for train_or_test in ('training', 'testing'):
+        for train_or_test in (['training']):
             try:
                 h5_folder = os.path.join(video_root_path, '{}/{}_h5_t{}'.format(dataset, train_or_test, t))
                 assert (os.path.isdir(h5_folder))
                 num_videos = len(
-                    os.listdir(os.path.join(video_root_path, '{}/{}_frames'.format(dataset, train_or_test))))
+                    os.listdir(os.path.join(video_root_path, '{0}/{1}_frames'.format(dataset, train_or_test))))
                 for i in range(num_videos):
                     h5_file = os.path.join(video_root_path,
                                            '{0}/{1}_h5_t{2}/{0}_{3:02d}.h5'.format(dataset, train_or_test, t, i + 1))

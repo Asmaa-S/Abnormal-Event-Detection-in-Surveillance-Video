@@ -41,16 +41,28 @@ def regularity_score(x1, x2):
     sr = 1.0 - similarity_index
     return sr
 
+def video_to_clips(X_test,t):
+    import numpy as np
+    sz = X_test.shape[0]-t+1
+    X_test = np.expand_dims(X_test, axis=-1)
+    sequences = np.zeros((sz, 10, 227, 227, 1))
+    for i in range(0, sz):
+        clip = np.zeros((t, 227, 227, 1))
+        for j in range(0, t):
+            clip[j] = X_test[i + j, :, :, :]
+        sequences[i] = clip
+    return np.array(sequences),sz
+
 def t_predict_video (model, X_test, t =4):
     """ Predict on whole video
     """
     import numpy as np
-    reconstructed_bunch = model.predict(X_test)
-    sz = X_test.shape[0]
-    sa = np.array([np.linalg.norm(np.subtract(np.squeeze(X_test[i]),np.squeeze(reconstructed_bunch[i]))) for i in range(0,sz)])
-    sa_normalized = (sa - min(sa)) / max(sa)
+    sequences,sz = video_to_clips(X_test,t)
+    reconstructed_sequences = model.predict(sequences)
+    sa = np.array([np.linalg.norm(np.subtract(np.squeeze(sequences[i]),np.squeeze(reconstructed_sequences[i]))) for i in range(0,sz)])
+    sa_normalized = (sa - np.min(sa)) / (np.max(sa)-np.min(sa))
     sr = 1.0 - sa_normalized
-    return sr, sa, sz
+    return sr, sr, sz
     
 def t_predict_volumes(model, X_test, t =4, predict_frames = False):
     """ Predict on volumes
@@ -79,7 +91,7 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
     from PIL import Image
 
     #fetching paths to test_data, job_folder and trained model
-    test_dir = os.path.join(video_root_path, '{0}/testing_h5_t{1}'.format(dataset, t))
+    test_dir = os.path.join(video_root_path, '{0}/testing_numpy'.format(dataset))
     job_folder = os.path.join(video_root_path,dataset,'logs/jobs',job_uuid)
     model_filename = 'model_snapshot_e{:03d}_{:.6f}.h5'.format(epoch, val_loss)
 
@@ -92,21 +104,12 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
 
     #loop on all videos in the test data
     for videoid in range(n_videos):
-        videoname = '{0}_{1:02d}.h5'.format(dataset, videoid+1)
+        videoname = 'testing_frames_{0:03d}.h5'.format(videoid+1)
         filepath = os.path.join(test_dir, videoname)
         logger.info("==> {}".format(filepath))
 
-        if t > 0:
-            f = h5py.File(filepath, 'r')
-            X_test = f['data']
-            filesize = X_test.shape[0]
-
         
-        #load data
-        if t > 0: #if there was a time_length for the volumes
-            X_test = np.asarray(X_test)
-        else:
-            X_test = np.load(os.path.join(video_root_path, '{0}/testing_numpy/testing_frames_{1:03d}.npy'.format(dataset, videoid+1)))
+        X_test = np.load(os.path.join(video_root_path, '{0}/testing_numpy/testing_frames_{1:03d}.npy'.format(dataset, videoid+1)))
 
         #calculate regularity_score, reconstruction_error
         score_vid, recon_error, sz = t_predict_video(temporal_model, X_test, t)
@@ -119,9 +122,7 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
         gt_vid = get_gt_vid(video_root_path, dataset, videoid, pred_vid)
         all_gt.append(gt_vid)
         all_pred.append(pred_vid)
-        
-        f.close()
-    
+            
     #calculate AUC
     calc_auc_overall(logger, video_root_path, dataset, all_gt, all_pred)
         

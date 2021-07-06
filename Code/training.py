@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 #import tensorflow_io as tfio
 import warnings
+from keras import metrics
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -21,9 +22,12 @@ def compile_model(model, loss, optimizer):
     model.summary()
     if optimizer == 'sgd':
         opt = optimizers.SGD(nesterov=True)
+    elif optimizer == 'adam':
+        opt = optimizers.Adam(lr=1e-4, decay=1e-4/100, epsilon=1e-6)
     else:
         opt = optimizer
-    model.compile(loss=loss, optimizer=opt)
+        
+    model.compile(loss= 'binary_crossentropy', optimizer=opt, metrics=['cosine_similarity'])
 
 def get_model_by_config(model_cfg_name):
     '''

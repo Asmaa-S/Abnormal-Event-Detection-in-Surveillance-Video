@@ -86,7 +86,7 @@ def calc_auc_overall(logger, video_root_path, dataset, all_gt, all_pred):
     """ Calculate overall AUC
     """
     import numpy as np
-    from sklearn.metrics import roc_auc_score, roc_curve
+    from sklearn.metrics import roc_auc_score, roc_curve,auc
     import matplotlib.pyplot as plt
     import os
     
@@ -95,8 +95,10 @@ def calc_auc_overall(logger, video_root_path, dataset, all_gt, all_pred):
     all_gt = np.concatenate(all_gt).ravel()
     all_pred = np.concatenate(all_pred).ravel()
 
-    auc = roc_auc_score(all_gt, all_pred)
-    fpr, tpr, thresholds = roc_curve(all_gt, all_pred, pos_label=1)
+    fpr, tpr, thresholds = roc_curve(all_gt, all_pred, pos_label=0)
+    auc = auc(fpr, tpr)
+    #auc = roc_auc_score(all_gt, all_pred)
+    #fpr, tpr, thresholds = roc_curve(all_gt, all_pred, pos_label=1)
     frr = 1 - tpr
     far = fpr
     eer = compute_eer(far, frr)
