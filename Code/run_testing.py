@@ -18,14 +18,14 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 ###################################################################################################
 
 #Specify Testing Parameters
-video_root_path='UCSD'
-#video_root_path= '/content/drive/MyDrive/Grad Project/data/UCSD'
+# video_root_path='UCSD'
+video_root_path= '/content/drive/MyDrive/Grad Project/data/UCSD'
 dataset = 'UCSDped1' 
 
 #these parameters identify which snapshot of the model you care to test
-job_uuid = 'fa159ab6-e6bf-46ee-9cda-a18a596b9d5d'
-epoch = 50
-val_loss = 0.005240
+job_uuid = '537a2f70-4a2d-4a4b-80d8-a9e93858ae97'
+epoch = 39
+val_loss = 0.004629
 time_length = 10
 test_data = [epoch, val_loss, job_uuid, time_length]
 

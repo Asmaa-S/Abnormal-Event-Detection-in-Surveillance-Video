@@ -9,8 +9,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logger = logging.getLogger()
 
 #paths
-#video_root_path = '/content/drive/MyDrive/Grad Project/data/UCSD'
-video_root_path = 'UCSD'
+video_root_path = '/content/drive/MyDrive/Grad Project/data/UCSD'
 dataset = 'UCSDped1'
 
 #time_length

@@ -8,7 +8,6 @@
             sr = 1-sa
         4- compare score to a threshold
 '''
-from testvid import show_vids
 def get_gt_vid(video_root_path,dataset, vid_idx, pred_vid):
     """ Get a video representation for the ground truth
     """
@@ -59,7 +58,6 @@ def t_predict_video (model, X_test, t =4):
     """
     import numpy as np
     sequences,sz = video_to_clips(X_test,t)
-    show_vids(sequences[0].squeeze())
     reconstructed_sequences = model.predict(sequences)
     sa = np.array([np.linalg.norm(np.subtract(np.squeeze(sequences[i]),np.squeeze(reconstructed_sequences[i]))) for i in range(0,sz)])
     sa_normalized = (sa - np.min(sa)) / (np.max(sa)-np.min(sa))
