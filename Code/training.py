@@ -1,6 +1,5 @@
-
 import yaml
-from generator import generator, data_from_h5,split_data_from_h5
+from generator import train_model,plot_loss
 import h5py
 import os
 import numpy as np
@@ -9,12 +8,10 @@ from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 from custom_callback import LossHistory
 import matplotlib.pyplot as plt
 import tensorflow as tf
-try:
-    from tnsorflow.keras.utils.io_utils import HDF5Matrix
-except ImportError:
-    pass
-    #import tensorflow_io as tfio
+#import tensorflow_io as tfio
 import warnings
+from keras import metrics
+
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 def compile_model(model, loss, optimizer):
@@ -25,9 +22,12 @@ def compile_model(model, loss, optimizer):
     model.summary()
     if optimizer == 'sgd':
         opt = optimizers.SGD(nesterov=True)
+    elif optimizer == 'adam':
+        opt = optimizers.Adam(lr=1e-4, decay=1e-4/100, epsilon=1e-6)
     else:
         opt = optimizer
-    model.compile(loss=loss, optimizer=opt)
+        
+    model.compile(loss= 'binary_crossentropy', optimizer=opt, metrics=['cosine_similarity'])
 
 def get_model_by_config(model_cfg_name):
     '''
@@ -54,8 +54,7 @@ def train(dataset, job_folder, logger, video_root_path):
     time_length = cfg['time_length']
 
     #get the model
-    model = get_model_by_config(cfg['model'])
-    
+    model = get_model_by_config(cfg['model'])    
     for layer in model.layers:
         print(layer.output_shape)
 
@@ -68,68 +67,11 @@ def train(dataset, job_folder, logger, video_root_path):
         yaml.dump(yaml_string, outfile)
 
     logger.info("Preparing training and testing data")
-    #preprocess_data(logger, dataset, time_length, video_root_path)
-    if time_length <= 0:
-        data = np.load(os.path.join(video_root_path, '{0}/training_frames_t0.npy'.format(dataset)))
-        #data = np.reshape(data, (len(data), 227,227,time_length, 1))
-    else:
-        try:
-            data = np.array(HDF5Matrix(os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length)), 'data'))
-            data = np.reshape(data, (len(data), 227,227,time_length, 1))
-            use_generator = False
-        except:
-            #path = os.path.join(video_root_path, '{}/training_h5_t{}'.format(dataset, time_length))
-
-            hdf5_path = os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length))
-
-            dset_train, dset_val = split_data_from_h5(hdf5_path, 304)
-
-            steps_per_epoch = len(dset_train) // batch_size
-            validation_steps = len(dset_val) // batch_size
-
-            use_generator = True
-
-    snapshot = ModelCheckpoint(os.path.join(job_folder,
-               'model_snapshot_e{epoch:03d}_{val_loss:.6f}.h5'))
-
-    earlystop = EarlyStopping(patience=10)
-
-    history_log = LossHistory(job_folder, logger)
-
-    logger.info("Initializing training...")
-
-    if not use_generator:
-        history = model.fit(
-            data, data,
-            batch_size=batch_size,
-            epochs=nb_epoch,
-            validation_split=0.2,
-            shuffle='batch',
-            callbacks=[snapshot, earlystop, history_log]
-        )
-    else:
-        history = model.fit_generator(generator(batch_size, dset_train),
-                            steps_per_epoch=steps_per_epoch,
-                            epochs=nb_epoch,
-                            callbacks= [snapshot, earlystop, history_log],
-                            validation_steps=validation_steps,
-                            validation_data=generator(batch_size, dset_val))
-
-
+    hdf5_path = os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length))
+    with h5py.File(hdf5_path, 'r') as hf:
+        sample_counts = hf['data'].shape[0]
+    
+    history = train_model(model, hdf5_path, 0.2, batch_size, sample_counts,nb_epoch,logger,job_folder)
     logger.info("Training completed!")
-    np.save(os.path.join(job_folder, 'train_profile.npy'), history.history)
 
-    n_epoch = len(history.history['loss'])
-    logger.info("Plotting training profile for {} epochs".format(n_epoch))
-    plt.plot(range(1, n_epoch+1),
-             history.history['val_loss'],
-             'g-',
-             label='Val Loss')
-    plt.plot(range(1, n_epoch+1),
-             history.history['loss'],
-             'g--',
-             label='Training Loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.legend()
-    plt.savefig(os.path.join(job_folder, 'train_val_loss.png'))
+    plot_loss(history,job_folder,nb_epoch,logger)
