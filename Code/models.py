@@ -23,11 +23,11 @@ def conv_lstm_ae(): #AUC 59
     #conv2 = TimeDistributed(BatchNormalization())(conv2)
 
     convlstm1 = ConvLSTM2D(64, kernel_size=(3, 3), padding='same', return_sequences=True)(conv2)
-    #convlstm1 = BatchNormalization()(convlstm1)
+    convlstm1 = LayerNormalization()(convlstm1)
     convlstm2 = ConvLSTM2D(32, kernel_size=(3, 3), padding='same', return_sequences=True)(convlstm1)
-    #convlstm2 = BatchNormalization()(convlstm2)
+    convlstm2 = LayerNormalization()(convlstm2)
     convlstm3 = ConvLSTM2D(64, kernel_size=(3, 3), padding='same', return_sequences=True)(convlstm2)
-    #convlstm3 = BatchNormalization()(convlstm3)
+    convlstm3 = LayerNormalization()(convlstm3)
 
     deconv1 = TimeDistributed(Conv2DTranspose(128, kernel_size=(5, 5), padding='valid', activation = 'elu', strides=(2, 2)))(convlstm3)
     #deconv1 = TimeDistributed(BatchNormalization())(deconv1)
