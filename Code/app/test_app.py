@@ -28,14 +28,14 @@ def test(test_video, dataset):
         Plot reconstruction errors/regularity scores plots
     """
     import numpy as np
-    from keras.models import load_model
+    from tensorflow.keras.models import load_model
     import os
     import h5py
     import matplotlib.pyplot as plt
     import matplotlib.pyplot as plt
     from evaluate import plot_regularity_score, plot_reconstruction_error,calc_auc_overall
     from PIL import Image
-
+    import re
     t = 10 #time length of each clip
 
     #fetching paths to test_data, job_folder and trained model
@@ -53,9 +53,11 @@ def test(test_video, dataset):
     temporal_model = load_model(os.path.join(model_folder, model_filename))
 
     #loop on all videos in the test data
+    test_video = test_video.replace('.mp4','.npy')
+    print(test_video)
     filepath = os.path.join(test_dir, test_video)
     X_test = np.load(filepath)
     #calculate regularity_score, reconstruction_error
     score_vid, recon_error, sz = t_predict_video(temporal_model, X_test, t)
 
-    return score_vid
+    return np.array(score_vid)
