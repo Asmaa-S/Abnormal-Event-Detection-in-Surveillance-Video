@@ -6,8 +6,20 @@ from cv2 import VideoWriter, VideoWriter_fourcc
 from time import sleep
 import pickle as pkl
 import os
+video_root_path='UCSD'
+dataset = 'UCSDped1'
+mean_frame = np.load(video_root_path+'/'+dataset+'/mean_frame_224.npy')
 
-def show_vid(VID, play=False):
+def show_vid(VID, mean_frame= None, play=False):
+
+    if np.all(mean_frame != None):
+        VID = VID + np.repeat(mean_frame[np.newaxis,:, :], VID.shape[0], axis=0)
+
+    if os.path.isfile('vid.mp4'):
+        os.remove("vid.mp4")
+    if os.path.isfile('vid.avi'):
+        os.remove("vid.avi")
+
     if VID.shape[0] <= 20:
         FPS = 4
         s= 0.5
