@@ -11,6 +11,8 @@ import test_app
 import fpstimer
 import math 
 from evaluate_PSNR import *
+import pickle as pkl
+from active_learning_test import *
 
 timer = fpstimer.FPSTimer(25) # Make a timer that is set for 25 fps
 
@@ -26,7 +28,7 @@ if not selected_option:
 #################### Selecting Test the System ###########################
 if selected_option == 'Test the System':
 
-    tests = ['', 'Regularity Score', 'PSNR Regularity Score' , 'Live Abnormality']
+    tests = ['', 'Regularity Score', 'PSNR Regularity Score' , 'Live Abnormality', 'Active Learning Module']
     selected_test = st.sidebar.selectbox("You can choose whether to view live abnormality or view " 
     +"the regularity scores:", tests, format_func=lambda x: ' ' if x == '' else x)
 
@@ -96,6 +98,15 @@ if selected_option == 'Test the System':
                     st.video(video_bytes)
                 except:
                     pass
+    
+    elif selected_test == 'Active Learning Module':
+        parag.write('In this part, you are shown a video volume and you are required to answer whether it is a normal or abnormal video. This will help the model retrain and improves its performance.')
+        if selected_dataset:    
+            t = 10
+            mean_frame = np.load(os.path.join('Data/{0}/mean_frame_224.npy'.format(selected_dataset)))
+            data_path = os.path.join('Data/{0}/data.pkl'.format(selected_dataset))
+            Active_session(data_path, mean_frame,start = 0, budget=5)
+
                     
 ############# Selecting Go to Documentation #####################
 elif selected_option == 'Go to Documentation':
