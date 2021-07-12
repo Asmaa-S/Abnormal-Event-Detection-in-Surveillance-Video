@@ -57,7 +57,7 @@ def Active_session(data_path, mean_frame,start = 0, budget=5):
     handlabled_data ={'X':[], 'y':[]}
     
     st.subheader(f'starting at sample index = {start}')    
-    label = st.enpty()
+    label = st.empty()
     for i, samp in  enumerate( abnormal_samples[start:start+budget]):    
         
         col1, col2 = st.beta_columns(2)
@@ -75,7 +75,7 @@ def Active_session(data_path, mean_frame,start = 0, budget=5):
         sleep(0.1)
         if label:
             handlabled_data['X'].append(samp)
-            handlabled_data['y'].append(int(label))
+            #handlabled_data['y'].append(int(label))
         else: st.warning("Please fill out so required fields")
 
         #Free
