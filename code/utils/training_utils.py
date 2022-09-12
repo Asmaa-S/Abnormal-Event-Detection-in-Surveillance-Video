@@ -1,5 +1,5 @@
 import yaml
-from Code.utils.generator import train_model, plot_loss
+from generator import train_model, plot_loss
 import h5py
 import os
 import warnings
