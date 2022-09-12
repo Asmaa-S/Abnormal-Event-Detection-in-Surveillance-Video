@@ -43,13 +43,13 @@ and improves the model's performance over time.
 ├── ├── run_training.py
 ├── ├── test.ipynb
 
-├── ├── sample_result.png
-├── ├── model_architecture.png
-
-├── ├── requirements.txt
-
 ├── data
 ├── config.yml
+
+├── sample_result.png
+├── model_architecture.png
+
+├── requirements.txt
 
 ````
 - `app`: directory used for the Streamlit App only
@@ -61,7 +61,7 @@ The abnormality of an event is decided based on a regularity score that is based
 the frames reconstruction error. In the example below, the regularity score was low when the frames in the video 
 were "normal" (The green area), however, it was at its highest when an abnormal event occurred at
 the end of the video. If you zoom in on the video snippet, you can see a man on a bike; this was 
-considered an abnormality in this case.
+considered an abnormality in this case. <br>
 ![result](sample_result.png)
 
 ### Model Performance:
