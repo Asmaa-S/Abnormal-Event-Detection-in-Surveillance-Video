@@ -43,13 +43,13 @@ and improves the model's performance over time.
 ├── ├── run_training.py
 ├── ├── test.ipynb
 
-├── ├── sample_result.png
-├── ├── model_architecture.png
-
-├── ├── requirements.txt
-
 ├── data
 ├── config.yml
+
+├── sample_result.png
+├── model_architecture.png
+
+├── requirements.txt
 
 ````
 - `app`: directory used for the Streamlit App only
