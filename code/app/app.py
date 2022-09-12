@@ -39,13 +39,13 @@ if selected_option == 'Test the System':
     if selected_test == 'Regularity Score':
         parag.write('_**Regularity Score**_ is a score calculated based on the reconstruction error between the original frame and the reconstructed frame. Normal frames have higher regularity than abnormal frames.')    
         if selected_dataset:
-            test_videos = [f for f in (os.listdir("./Data/{}/Test_videos".format(selected_dataset))) 
-            if join("./Data/{}/Test_videos".format(selected_dataset), f)]
+            test_videos = [f for f in (os.listdir("./data/{}/Test_videos".format(selected_dataset)))
+            if join("./data/{}/Test_videos".format(selected_dataset), f)]
             test_videos.insert(0,'')
             selected_video = st.sidebar.selectbox('Pick a test video', test_videos, format_func=lambda x: ' ' if x == '' else x)
             if selected_video:
                 col1, col2 = st.beta_columns(2)
-                video_file = open(os.path.join("./Data/{0}/Test_videos/{1}".format(selected_dataset, selected_video)), 'rb')
+                video_file = open(os.path.join("./data/{0}/Test_videos/{1}".format(selected_dataset, selected_video)), 'rb')
                 video_bytes = video_file.read()
                 col1.video(video_bytes)
                 #progress_bar = st.sidebar.progress(0)
@@ -67,17 +67,17 @@ if selected_option == 'Test the System':
     elif selected_test == 'PSNR Regularity Score':
         parag.write('_**PSNR(Peak Signal to Noise Ratio):**_  It is used as a metric between a predicted frame and a ground truth frame. Having a high PSNR indicates a normal frame.')    
         if selected_dataset:
-            test_videos = [f for f in (os.listdir("./Data/{}/Test_videos".format(selected_dataset))) 
-                    if join("./Data/{}/Test_videos".format(selected_dataset), f)]
+            test_videos = [f for f in (os.listdir("./data/{}/Test_videos".format(selected_dataset)))
+                    if join("./data/{}/Test_videos".format(selected_dataset), f)]
             test_videos.insert(0,'')
             selected_video = st.sidebar.selectbox('Pick a test video', test_videos, format_func=lambda x: ' ' if x == '' else x)
             if selected_video:
                 col1, col2 = st.beta_columns(2)
-                video_file = open(os.path.join("./Data/{0}/Test_videos/{1}".format(selected_dataset, selected_video)), 'rb')
+                video_file = open(os.path.join("./data/{0}/Test_videos/{1}".format(selected_dataset, selected_video)), 'rb')
                 video_bytes = video_file.read()
                 col1.video(video_bytes)
                 if col1.button('Plot PSNR Regularity Score'):
-                    PSNR_file = os.path.join("./Data/{0}/PSNR/{0}".format(selected_dataset, selected_video))
+                    PSNR_file = os.path.join("./data/{0}/PSNR/{0}".format(selected_dataset, selected_video))
                     psnrs = np.array(load_psnr(PSNR_file))
                     index = int(re.findall(r'\d+', selected_video)[0].replace('00',''))
                     psnr = (psnrs[index] - np.min(psnrs[index]))/np.max(psnrs[index])
@@ -87,13 +87,13 @@ if selected_option == 'Test the System':
     elif selected_test == 'Live Abnormality':
         parag.write('In this test, we show the input video, the reconstructed video, the difference between the two, and point the abnormality detected by the system. This is all base on a threshold.')    
         if selected_dataset:
-            test_videos = [f for f in (os.listdir("./Data/{}/Test_videos".format(selected_dataset))) 
-                    if join("./Data/{}/Test_videos".format(selected_dataset), f)]
+            test_videos = [f for f in (os.listdir("./data/{}/Test_videos".format(selected_dataset)))
+                    if join("./data/{}/Test_videos".format(selected_dataset), f)]
             test_videos.insert(0,'')
             selected_video = st.sidebar.selectbox('Pick a test video', test_videos, format_func=lambda x: ' ' if x == '' else x)
             if selected_video:
                 try:
-                    video_file = open(os.path.join("./Data/{0}/live_abnormality/{1}".format(selected_dataset, selected_video)), 'rb')
+                    video_file = open(os.path.join("./data/{0}/live_abnormality/{1}".format(selected_dataset, selected_video)), 'rb')
                     video_bytes = video_file.read()
                     st.video(video_bytes)
                 except:
@@ -103,8 +103,8 @@ if selected_option == 'Test the System':
         parag.write('In this part, you are shown a video volume and you are required to answer whether it is a normal or abnormal video. This will help the model retrain and improves its performance.')
         if selected_dataset:    
             t = 10
-            mean_frame = np.load(os.path.join('Data/{0}/mean_frame_224.npy'.format(selected_dataset)))
-            data_path = os.path.join('Data/{0}/data.pkl'.format(selected_dataset))
+            mean_frame = np.load(os.path.join('data/{0}/mean_frame_224.npy'.format(selected_dataset)))
+            data_path = os.path.join('data/{0}/data.pkl'.format(selected_dataset))
             Active_session(data_path, mean_frame,start = 0, budget=5)
 
                     
@@ -114,6 +114,6 @@ elif selected_option == 'Go to Documentation':
         st.write(text)
         st.write('Two models are tested in this web interface:')
         st.write('1. Spatio-temporal Auto encoder:')
-        st.image('Code/app/autoencoder.png')
+        st.image('code/app/autoencoder.png')
         st.write('2. Future Frame Prediction:')
-        st.image('Code/app/future.png')
+        st.image('code/app/future.png')

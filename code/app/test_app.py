@@ -39,9 +39,9 @@ def test(test_video, dataset):
     t = 10 #time length of each clip
 
     #fetching paths to test_data, job_folder and trained model
-    test_dir = os.path.join('./Data/{0}/testing_numpy'.format(dataset))
+    test_dir = os.path.join('./data/{0}/testing_numpy'.format(dataset))
     
-    model_folder = os.path.join('./Data/{0}'.format(dataset))
+    model_folder = os.path.join('./data/{0}'.format(dataset))
     if dataset == 'UCSDped1':
         epoch = 50
         val_loss = -0.117306

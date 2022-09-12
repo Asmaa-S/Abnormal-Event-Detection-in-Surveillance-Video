@@ -9,12 +9,17 @@
         4- compare score to a threshold
 """
 
+from skimage import measure
+import numpy as np
+from keras.models import load_model
+import os
+from Code.utils.evaluation_utils import plot_regularity_score, plot_reconstruction_error, calc_auc_overall
+from PIL import Image
+
 
 def get_gt_vid(video_root_path, dataset, vid_idx, pred_vid):
     """ Get a video representation for the ground truth
     """
-    import numpy as np
-
     if dataset == 'UCSDped1':
         gt_data = 'UCSD_ped1'
     elif dataset == 'UCSDped2':
@@ -40,14 +45,12 @@ def regularity_score(x1, x2):
     """ Calculate a regularity score
     """
     import numpy as np
-    from skimage import measure
     similarity_index = measure.compare_ssim(x1[0], x2[0], multichannel=True)
     sr = 1.0 - similarity_index
     return sr
 
 
 def video_to_clips(X_test, t):
-    import numpy as np
     sz = X_test.shape[0] - t + 1
     X_test = np.expand_dims(X_test, axis=-1)
     sequences = np.zeros((sz, 10, 227, 227, 1))
@@ -62,7 +65,6 @@ def video_to_clips(X_test, t):
 def t_predict_video(model, X_test, t=4):
     """ Predict on whole video
     """
-    import numpy as np
     sequences, sz = video_to_clips(X_test, t)
     reconstructed_sequences = model.predict(sequences)
     sa = np.array(
@@ -76,7 +78,6 @@ def t_predict_video(model, X_test, t=4):
 def t_predict_volumes(model, X_test, t=4, predict_frames=False):
     """ Predict on volumes
     """
-    import numpy as np
     video_scores = []
     for number, bunch in enumerate(X_test):
         n_bunch = np.expand_dims(bunch, axis=0)
@@ -91,15 +92,6 @@ def test(logger, dataset, t, job_uuid, epoch, val_loss, video_root_path, n_video
         Plot reconstruction errors/regularity scores plots
         Plot the overall AUC
     """
-    import numpy as np
-    from keras.models import load_model
-    import os
-    import h5py
-    import matplotlib.pyplot as plt
-    import matplotlib.pyplot as plt
-    from evaluate import plot_regularity_score, plot_reconstruction_error, calc_auc_overall
-    from PIL import Image
-
     # fetching paths to test_data, job_folder and trained model
     test_dir = os.path.join(video_root_path, '{0}/testing_numpy'.format(dataset))
     job_folder = os.path.join(video_root_path, dataset, 'logs/jobs', job_uuid)

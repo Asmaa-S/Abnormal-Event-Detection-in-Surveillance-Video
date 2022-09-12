@@ -8,7 +8,7 @@ import json
 
 
 # data folder contain all datasets, such as ped1, ped2, avenue, shanghaitech, etc
-DATA_DIR = '../Data'
+DATA_DIR = '../data'
 # hostname = socket.gethostname()
 # if hostname == 'dl-T8520-G10':  # 119
 #     DATA_DIR = '/home/liuwen/ssd/datasets'
@@ -19,7 +19,7 @@ DATA_DIR = '../Data'
 #     DATA_DIR = '/public/home/gaoshenghua/liuwen/datasets'
 # else:
 #     # raise NotImplementedError('Not found this machine {}!'.format(hostname))
-#     DATA_DIR = '../Data'
+#     DATA_DIR = '../data'
 
 
 # normalize scores in each sub video

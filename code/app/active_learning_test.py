@@ -27,10 +27,10 @@ def show_vid(VID, mean_frame= None, play=False):
     if np.all(mean_frame != None):
         VID = VID + np.repeat(mean_frame[np.newaxis,:, :], VID.shape[0], axis=0)
 
-    if os.path.isfile('Data/AL/vid.mp4'):
-        os. remove("Data/AL/vid.mp4")
-    if os.path.isfile('Data/AL/vid.avi'):
-        os. remove("Data/AL/vid.avi")
+    if os.path.isfile('data/AL/vid.mp4'):
+        os. remove("data/AL/vid.mp4")
+    if os.path.isfile('data/AL/vid.avi'):
+        os. remove("data/AL/vid.avi")
         
 
     if VID.shape[0] <= 20:
@@ -41,14 +41,14 @@ def show_vid(VID, mean_frame= None, play=False):
         s = 0.1
     (width, height) = VID.shape[1:3]
     fourcc =  VideoWriter_fourcc(*'MP42')
-    video = VideoWriter('Data/AL/vid.avi', fourcc, float(FPS), (height, width), 0)
+    video = VideoWriter('data/AL/vid.avi', fourcc, float(FPS), (height, width), 0)
     for i in range(VID.shape[0]):
         frame = VID[i,:,:]
         if frame.max() <= 1:
             frame = cv2.normalize(frame, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
         video.write(frame)
     video.release()
-    os.system('ffmpeg -i {0} -vcodec libx264 {1}'.format('Data/AL/vid.avi','Data/AL/vid.mp4'))
+    os.system('ffmpeg -i {0} -vcodec libx264 {1}'.format('data/AL/vid.avi','data/AL/vid.mp4'))
 
 
 
@@ -65,7 +65,7 @@ def Active_session(data_path, mean_frame,start = 0, budget=5):
         #show volume
         sample = np.expand_dims(samp, axis =0)
         show_vid(sample[0].squeeze(), mean_frame)
-        video_bytes = open('Data/AL/vid.mp4','rb').read()
+        video_bytes = open('data/AL/vid.mp4','rb').read()
         col1.video(video_bytes)
         sleep(0.1)
         
@@ -79,10 +79,10 @@ def Active_session(data_path, mean_frame,start = 0, budget=5):
         else: st.warning("Please fill out so required fields")
 
         #Free
-        if os.path.isfile('Data/AL/vid.mp4'):
-            os. remove("Data/AL/vid.mp4")
-        if os.path.isfile('Data/AL/vid.avi'):
-            os. remove("Data/AL/vid.avi")
+        if os.path.isfile('data/AL/vid.mp4'):
+            os. remove("data/AL/vid.mp4")
+        if os.path.isfile('data/AL/vid.avi'):
+            os. remove("data/AL/vid.avi")
         col2 = st.empty()
         col1 =  st.empty()
         label =  st.empty()
