@@ -1,17 +1,30 @@
+import os
+import yaml
+from skimage.io import imread
+import numpy as np
+from skimage.transform import resize
+from skimage.color import rgb2gray
+import h5py
+from tqdm import tqdm
+import os
+
+
+def add_noise(data, noise_factor):
+    """ Add noise to input frame data
+    """
+    noisy_data = data + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=data.shape)
+    return noisy_data
+
 
 def calc_mean(dataset, video_root_path):
-    '''
+    """
     This function is used to calculate the mean of all frames in the training dataset
         INPUTS:
-          - dataset: the name of the dataset folder 
-          - video_root_path: the folder that contains all the datasets
-        OUTPUTS: 
+          - dataset (str): the name of the dataset folder
+          - video_root_path (str): the folder name that contains all the datasets
+        OUTPUTS:
             Saves the mean frame to a .npy file
-    '''
-    import os
-    from skimage.io import imread
-    import numpy as np
-    from skimage.transform import resize
+    """
 
     # path of the training frames
     frame_path = os.path.join(video_root_path, dataset, 'training_frames')
@@ -31,9 +44,9 @@ def calc_mean(dataset, video_root_path):
                         continue
                     else:
                         # the frame's path
-                        frame_filename = os.path.join(frame_path, frame_folder, frame_file)
+                        frame_path = os.path.join(frame_path, frame_folder, frame_file)
                         # normalize frame
-                        frame_value = imread(frame_filename, as_gray=True, plugin='pil') / 256
+                        frame_value = imread(frame_path, as_gray=True, plugin='pil') / 256
                         # resize to (227,227)
                         frame_value = resize(frame_value, (227, 227), mode='reflect')
                         assert (0. <= frame_value.all() <= 1.)
@@ -46,6 +59,7 @@ def calc_mean(dataset, video_root_path):
     except Exception as e:
         print(e)
         pass
+
     # calculate the mean
     frame_mean = frame_sum / count
     assert (0. <= frame_mean.all() <= 1.)
@@ -54,165 +68,88 @@ def calc_mean(dataset, video_root_path):
 
 
 def subtract_mean(dataset, video_root_path, is_combine=False):
-    '''
-  This function substracts the mean found in video_root_path/dataset/mean_frame_224.npy from all the frame files
+    """
+  This function subtracts the mean found in video_root_path/dataset/mean_frame_224.npy from all the frame files
       INPUTS:
-        - dataset: the name of the dataset folder 
-        - video_root_path: the folder that contains all the datasets
-        - is_combine: check whether to combine all videos data in one file/list 
-  '''
-    import os
-    import yaml
-    from skimage.io import imread
-    import numpy as np
-    from skimage.transform import resize
-    from skimage.color import rgb2gray
+        - dataset (str): the name of the dataset folder
+        - video_root_path (str): the name of the folder that contains all the datasets
+        - is_combine (bool): check whether to combine all videos data in one file/list
+  """
 
-    # add noise to the data frames
+    # get the parameters from the configuration file
+    with open('config.yml', 'r') as ymlfile:
+        cfg = yaml.load(ymlfile)
 
-    def add_noise(data, noise_factor):
-        import numpy as np
-        noisy_data = data + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=data.shape)
-        return noisy_data
+    is_clip = cfg.get('clip')
+    noise_factor = cfg.get('noise_factor')
 
     # load the mean file
     frame_mean = np.load(os.path.join(video_root_path, dataset, 'mean_frame_224.npy'))
 
-    training_combine = []
-    testing_combine = []
+    for state in ['training', 'testing']:
+        # path to training data: video_root_path/dataset/training_frames
+        frames_folders_path = os.path.join(video_root_path, dataset, f'{state}_frames')
 
-    # open & get the parameters from the configuration file
-    with open('config.yml', 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
-    
-    # is_clip: make sure values are within [0:1]?
-    is_clip = cfg.get('clip')
-    # add noise to the frames?
-    noise_factor = cfg.get('noise_factor')
-
-    # path to training data: video_root_path/dataset/training_frames
-    frame_path = os.path.join(video_root_path, dataset, 'training_frames')
-    # loop on data folders
-    for frame_folder in os.listdir(frame_path):
-        if frame_folder == '.DS_Store' or frame_folder == '._.DS_Store':
-            continue
-        else:
-            print('==> ' + os.path.join(frame_path, frame_folder))
-            # list of all processed frames
+        # loop on frames folders
+        for frame_folder in os.listdir(frames_folders_path):
             training_frames_vid = []
             # loop on files in each folder
-            for frame_file in sorted(os.listdir(os.path.join(frame_path, frame_folder))):
-                if frame_file == '.DS_Store' or frame_file == '._.DS_Store':
-                    continue
-                else:
-                    # frame path: video_root_path/dataset/training_frames/frame_folder/frame_file
-                    frame_filename = os.path.join(frame_path, frame_folder, frame_file)
-                    # normalize frame
-                    frame_value = rgb2gray(imread(frame_filename, as_grey=True, plugin='pil')) / 256
-                    # resize
-                    frame_value = resize(frame_value, (227, 227), mode='reflect')
-                    assert (0. <= frame_value.all() <= 1.)
-                    # subtract mean
-                    frame_value -= frame_mean
-                    training_frames_vid.append(frame_value)
+            for frame_file in sorted(os.listdir(os.path.join(frames_folders_path, frame_folder))):
+                # frame path: video_root_path/dataset/training_frames/frame_folder/frame_file
+                frame_path = os.path.join(frames_folders_path, frame_folder, frame_file)
+                # read gray frame & normalize frame
+                frame_value = rgb2gray(imread(frame_path, as_grey=True, plugin='pil')) / 256
+                # resize
+                frame_value = resize(frame_value, (227, 227), mode='reflect')
+                assert (0. <= frame_value.all() <= 1.)
+                # subtract mean
+                frame_value -= frame_mean
+                training_frames_vid.append(frame_value)
             training_frames_vid = np.array(training_frames_vid)
 
             # add noise if specified
             if noise_factor is not None and noise_factor > 0:
                 training_frames_vid = add_noise(training_frames_vid, noise_factor)
+
             # clip values to be withing [0:1]
             if is_clip is not None and is_clip:
                 training_frames_vid = np.clip(training_frames_vid, 0, 1)
+
             # save frames data to video_root_path/dataset/training_frames_{}.npy --- each vid has one file
-            np.save(os.path.join(video_root_path, dataset, 'training_numpy',
-                                 'training_frames_{}.npy'.format(frame_folder[-3:])), training_frames_vid)
-
-            if is_combine:
-                # training_frames_vid shape = (# of frames, 227*227)
-                # training_combine shape = (# of frames,227,227,1)
-                training_combine.extend(training_frames_vid.reshape(-1, 227, 227, 1))
-
-        # do the same for the test data
-
-    frame_path = os.path.join(video_root_path, dataset, 'testing_frames')
-    for frame_folder in os.listdir(frame_path):
-        if frame_folder == '.DS_Store' or frame_folder == '._.DS_Store' or frame_folder.endswith(
-                '_gt') or not frame_folder.startswith('Test'):
-            continue
-        else:
-            print('==> ' + os.path.join(frame_path, frame_folder))
-            testing_frames_vid = []
-            for frame_file in sorted(os.listdir(os.path.join(frame_path, frame_folder))):
-                if frame_file == '.DS_Store' or frame_file == '._.DS_Store':
-                    continue
-                else:
-                    frame_filename = os.path.join(frame_path, frame_folder, frame_file)
-                    # exceptions related to OUR dataset
-                    try:
-                        frame_value = rgb2gray(imread(frame_filename, as_grey=True, plugin='pil')) / 256
-                    except:
-                        print("Error in: ", frame_file)
-                        continue
-                    frame_value = resize(frame_value, (227, 227), mode='reflect')
-                    assert (0. <= frame_value.all() <= 1.)
-                    frame_value -= frame_mean
-                    testing_frames_vid.append(frame_value)
-            testing_frames_vid = np.array(testing_frames_vid)
-            
-            if noise_factor is not None and noise_factor > 0:
-                testing_frames_vid = add_noise(testing_frames_vid, noise_factor)
-            if is_clip is not None and is_clip:
-                testing_frames_vid = np.clip(testing_frames_vid, 0, 1)
-            np.save(os.path.join(video_root_path, dataset, 'testing_numpy',
-                                 'testing_frames_{}.npy'.format(frame_folder[-3:])), testing_frames_vid)
-            
-            if is_combine:
-                testing_combine.extend(testing_frames_vid.reshape(-1, 227, 227, 1))
-
-            # save combine values-- why? only god knows xD
-            # I think these are used in case we do not form volumes out of the data? - Dina
-            if is_combine:
-                training_combine = np.array(training_combine)
-                testing_combine = np.array(testing_combine)
-                np.save(os.path.join(video_root_path, dataset, 'training_numpy', 'training_frames_t0.npy'),
-                        training_combine)
-                np.save(os.path.join(video_root_path, dataset, 'testing_numpy', 'testing_frames_t0.npy'),
-                        testing_combine)
+            np.save(os.path.join(video_root_path, dataset, f'{state}_numpy',
+                                 '{0}_frames_{1}.npy'.format(state, frame_folder[-3:])), training_frames_vid)
 
 
 def build_h5(dataset, train_or_test, t, video_root_path):
-    '''
+    """
     Build h5 files for each test/train video
       INPUTS:
         - dataset: dataset name
         - train_or_test: whether it is training or testing data
         - t: time length of each volume
         - video_root_path: path of the folder that contains all the datasets
-  '''
-    import h5py
-    from tqdm import tqdm
-    import os
-    import numpy as np
-
-    print("==> {} {}".format(dataset, train_or_test))
+  """
 
     def build_volume(train_or_test, num_videos, time_length, strides):
 
-        '''
-        create volumes out of the frames where each voulume has a certain time_length
-          INPUTS: 
-            - train_or_test: whether to build volumes in training or testing data
-                use "training" or "testing" as inputs
-            - num_videos: number of videos in the dataset
-            - time_length: the time length of each volume
-            - stride: The distances req. between two consecutive frames
-        '''
+        """
+        create volumes out of the frames where each volume has a certain time_length
+          INPUTS:
+            - train_or_test (str): whether to build volumes in training or testing data
+                                    use "training" or "testing" as inputs
+            - num_videos (int): number of videos in the dataset
+            - time_length (int): the time length of each volume
+            - stride (int): The stride between two consecutive volumes
+        """
+
         for i in tqdm(range(num_videos)):
             # minor fix: don't recalculate already existing files
             h5_path = os.path.join(video_root_path,
                                    '{0}/{1}_h5_t{2}/{0}_{3:02d}.h5'.format(dataset, train_or_test, time_length, i + 1))
+
             if os.path.isfile(h5_path):
                 continue
+
             # data frames path: video_root_path/ dataset/ training^testing_numpy/ training^testing_frames_{}.npy
             data_frames = np.load(os.path.join(video_root_path,
                                                '{}/{}_numpy/{}_frames_{:03d}.npy'.format(dataset, train_or_test,
@@ -232,6 +169,7 @@ def build_h5(dataset, train_or_test, t, video_root_path):
                         if cnt == time_length:
                             clips.append(np.copy(clip))
                             cnt = 0
+
             clips = np.array(clips)
             with h5py.File(h5_path, 'w') as f:
                 if train_or_test == 'training':
@@ -245,14 +183,8 @@ def build_h5(dataset, train_or_test, t, video_root_path):
 
 
 def combine_dataset(dataset, t, video_root_path):
-    '''
-  This function combines multiple .h5 files together forming bigger files (volumes)
-  '''
-
-    import h5py
-    import os
-    from tqdm import tqdm
-
+    """ This function combines multiple .h5 files together forming bigger files (volumes)
+    """
     print("==> {}".format(dataset))
     # output path: video_root_path/dataset/dataset_train_t(time_length).h5
     output_file = h5py.File(os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, t)), 'w')
@@ -287,14 +219,12 @@ def combine_dataset(dataset, t, video_root_path):
 
 
 def preprocess_data(logger, dataset, t, video_root_path):
-    '''
-    This function combines all the functions before to perform the preprocessing.
-    '''
-    import os
-    import yaml
+    """ This function combines all the functions before to perform the preprocessing.
+    """
 
     with open('config.yml', 'r') as ymlfile:
         cfg = yaml.load(ymlfile)
+
     data_regen = False
     if cfg.get('data-regen'):
         data_regen = cfg['data-regen']

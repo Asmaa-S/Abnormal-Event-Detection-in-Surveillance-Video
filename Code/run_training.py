@@ -4,10 +4,11 @@ import datetime
 import os
 import sys
 import coloredlogs
-from training import train
+from Code.utils.training_utils import train
 import uuid
 from shutil import copyfile
 import tensorflow as tf
+
 
 def handle_exception(exc_type, exc_value, exc_traceback):
     if issubclass(exc_type, KeyboardInterrupt):
@@ -15,8 +16,6 @@ def handle_exception(exc_type, exc_value, exc_traceback):
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
         return
     logger.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
-
-
 
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)

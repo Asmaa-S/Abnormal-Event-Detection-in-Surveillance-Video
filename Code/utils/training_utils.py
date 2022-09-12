@@ -1,18 +1,11 @@
 import yaml
-from generator import train_model,plot_loss
+from ..generator import train_model, plot_loss
 import h5py
 import os
-import numpy as np
-from preprocessing import preprocess_data
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
-from custom_callback import LossHistory
-import matplotlib.pyplot as plt
-import tensorflow as tf
-#import tensorflow_io as tfio
 import warnings
-from keras import metrics
 
 warnings.filterwarnings("ignore", category=FutureWarning)
+
 
 def compile_model(model, loss, optimizer):
     """
@@ -23,19 +16,21 @@ def compile_model(model, loss, optimizer):
     if optimizer == 'sgd':
         opt = optimizers.SGD(nesterov=True)
     elif optimizer == 'adam':
-        opt = optimizers.Adam(lr=1e-4, decay=1e-4/100, epsilon=1e-6)
+        opt = optimizers.Adam(lr=1e-4, decay=1e-4 / 100, epsilon=1e-6)
     else:
         opt = optimizer
-        
-    model.compile(loss= 'binary_crossentropy', optimizer=opt, metrics=['cosine_similarity'])
+
+    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['cosine_similarity'])
+
 
 def get_model_by_config(model_cfg_name):
-    '''
+    """
         Get the model specified in the config file from models.py
-    '''
+    """
     module = __import__('models')
-    get_model_func  = getattr(module, model_cfg_name)
+    get_model_func = getattr(module, model_cfg_name)
     return get_model_func()
+
 
 def train(dataset, job_folder, logger, video_root_path):
     """
@@ -46,15 +41,15 @@ def train(dataset, job_folder, logger, video_root_path):
     with open(os.path.join(job_folder, 'config.yml'), 'r') as ymlfile:
         cfg = yaml.load(ymlfile)
 
-    #get the parameters from the config file
+    # get the parameters from the config file
     nb_epoch = cfg['epochs']
     batch_size = cfg['batch_size']
     loss = cfg['cost']
     optimizer = cfg['optimizer']
     time_length = cfg['time_length']
 
-    #get the model
-    model = get_model_by_config(cfg['model'])    
+    # get the model
+    model = get_model_by_config(cfg['model'])
     for layer in model.layers:
         print(layer.output_shape)
 
@@ -70,8 +65,8 @@ def train(dataset, job_folder, logger, video_root_path):
     hdf5_path = os.path.join(video_root_path, '{0}/{0}_train_t{1}.h5'.format(dataset, time_length))
     with h5py.File(hdf5_path, 'r') as hf:
         sample_counts = hf['data'].shape[0]
-    
-    history = train_model(model, hdf5_path, 0.2, batch_size, sample_counts,nb_epoch,logger,job_folder)
+
+    history = train_model(model, hdf5_path, 0.2, batch_size, sample_counts, nb_epoch, logger, job_folder)
     logger.info("Training completed!")
 
-    plot_loss(history,job_folder,nb_epoch,logger)
+    plot_loss(history, job_folder, nb_epoch, logger)
