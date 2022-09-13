@@ -2,7 +2,7 @@ import h5py
 import os
 import numpy as np
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
-from Code.model.custom_callback import LossHistory
+from code.model.custom_callback import LossHistory
 import matplotlib.pyplot as plt
 
 

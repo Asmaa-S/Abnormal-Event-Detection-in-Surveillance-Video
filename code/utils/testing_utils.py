@@ -13,7 +13,7 @@ from skimage import measure
 import numpy as np
 from keras.models import load_model
 import os
-from Code.utils.evaluation_utils import plot_regularity_score, plot_reconstruction_error, calc_auc_overall
+from code.utils.evaluation_utils import plot_regularity_score, plot_reconstruction_error, calc_auc_overall
 from PIL import Image
 
 

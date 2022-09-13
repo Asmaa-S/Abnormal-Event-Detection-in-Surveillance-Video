@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from Code.utils.preprocessing_utils import preprocess_data
+from code.utils.preprocessing_utils import preprocess_data
 import yaml
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)

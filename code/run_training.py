@@ -4,7 +4,7 @@ import datetime
 import os
 import sys
 import coloredlogs
-from Code.utils.training_utils import train
+from code.utils.training_utils import train
 import uuid
 from shutil import copyfile
 import tensorflow as tf
